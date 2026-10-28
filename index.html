@@ -8,14 +8,14 @@
   <title>你好，我是 Aladdin — 个人主页</title>
   <style>
     :root {
-      --bg: #f5f5f2;
-      --card: #ffffff;
-      --ink: #20211f;
-      --muted: #777a73;
-      --line: #e8e9e3;
-      --accent: #c8f169;
-      --radius: 22px;
-      --shadow: 0 12px 34px rgba(28, 32, 21, .045);
+      --bg: #0b1017;
+      --card: #111923;
+      --ink: #edf2fa;
+      --muted: #9aa9bc;
+      --line: #202c3a;
+      --accent: #83baff;
+      --radius: 20px;
+      --shadow: 0 14px 38px rgba(0, 0, 0, .18);
     }
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -23,8 +23,8 @@
       margin: 0;
       background: var(--bg);
       color: var(--ink);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "PingFang SC",
+        "Microsoft YaHei", system-ui, sans-serif;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
@@ -41,34 +41,38 @@
     .hero { padding: 32px; min-height: 330px; display: flex; flex-direction: column; justify-content: space-between; }
     .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); }
     .eyebrow::before { content: ""; width: 18px; height: 1px; background: currentColor; }
-    h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.1; letter-spacing: -.055em; margin: 20px 0 16px; font-weight: 760; }
+    h1 { font-size: clamp(30px, 4vw, 43px); line-height: 1.1; letter-spacing: -.055em; margin: 20px 0 16px; font-weight: 760; }
     h1 .highlight { position: relative; z-index: 0; white-space: nowrap; }
     h1 .highlight::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 2px; height: 13px; background: var(--accent); z-index: -1; transform: rotate(-1deg); }
     .intro { color: var(--muted); font-size: 15px; max-width: 480px; margin: 0; }
     .hero-bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 32px; }
     .location { color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 7px; }
-    .pill-link { display: inline-flex; align-items: center; gap: 9px; padding: 11px 15px; border-radius: 999px; background: var(--ink); color: white; font-size: 12px; font-weight: 700; transition: transform .2s, background .2s; }
-    .pill-link:hover { transform: translateY(-2px); background: #41443b; }
+    .pill-link { display: inline-flex; align-items: center; gap: 9px; padding: 11px 15px; border-radius: 999px; background: var(--ink); color: #f5f8ff; font-size: 12px; font-weight: 700; transition: transform .2s, background .2s; }
+    .pill-link:hover { transform: translateY(-2px); background: #29425e; }
     .pill-link span { font-size: 16px; line-height: 1; }
     .profile { padding: 24px; display: flex; flex-direction: column; min-height: 330px; }
     .profile-head { display: flex; justify-content: space-between; align-items: center; }
     .section-label { font-size: 11px; color: var(--muted); font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
     .avatar-wrap { margin: 22px auto 16px; position: relative; width: 128px; height: 128px; }
-    .avatar { width: 100%; height: 100%; border-radius: 36px; object-fit: cover; display: block; background: #e8eadf; }
-    .avatar-badge { position: absolute; right: -7px; bottom: -7px; display: grid; place-items: center; width: 35px; height: 35px; border: 4px solid white; border-radius: 50%; background: var(--accent); font-size: 16px; }
+    .avatar { width: 100%; height: 100%; border-radius: 36px; object-fit: cover; display: block; background: #1b2634; }
+    .avatar-badge { position: absolute; right: -7px; bottom: -7px; display: grid; place-items: center; width: 35px; height: 35px; border: 4px solid #111923; border-radius: 50%; background: var(--accent); font-size: 16px; }
     .profile-name { text-align: center; font-size: 19px; font-weight: 800; letter-spacing: -.03em; }
     .profile-role { text-align: center; color: var(--muted); font-size: 12px; margin-top: 3px; }
     .profile-tags { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 17px; }
-    .tag { padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; color: #64675f; font-size: 10px; }
+    .tag { padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; color: #aebbd0; font-size: 10px; }
     .links-card { padding: 24px; }
     .card-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 17px; }
     h2 { font-size: 15px; letter-spacing: -.02em; margin: 0; }
     .small-note { color: var(--muted); font-size: 11px; }
     .link-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
     .link-item { display: flex; align-items: center; gap: 11px; padding: 13px 12px; min-width: 0; border: 1px solid var(--line); border-radius: 15px; transition: border-color .2s, transform .2s, background .2s; }
-    .link-item:hover { border-color: #c8d69e; background: #fbfdf5; transform: translateY(-2px); }
-    .link-icon { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 11px; background: #f2f3ee; font-size: 16px; }
+    .link-item:hover { border-color: #477db7; background: #172537; transform: translateY(-2px); }
+    .link-icon { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 11px; background: #1b2634; font-size: 16px; }
     .link-copy { min-width: 0; }
+    .avatar { border: 1px solid #344357; }
+    .link-icon { color: #dbe8fa; }
+    .brand-mark { color: #08111c; }
+    .highlight::after { opacity: .45; }
     .link-copy strong { display: block; font-size: 12px; }
     .link-copy small { display: block; color: var(--muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .arrow { margin-left: auto; color: #9a9d94; font-size: 14px; }
@@ -78,15 +82,15 @@
     .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 21px; padding-top: 17px; border-top: 1px solid var(--line); gap: 12px; }
     .stat strong { display: block; font-size: 21px; letter-spacing: -.05em; }
     .stat span { display: block; color: var(--muted); font-size: 10px; margin-top: 2px; }
-    .contact { padding: 24px; background: var(--ink); color: white; display: flex; flex-direction: column; justify-content: space-between; min-height: 210px; }
-    .contact .section-label { color: #b9bcb3; }
+    .contact { padding: 24px; background: #101a27; color: #f5f8ff; display: flex; flex-direction: column; justify-content: space-between; min-height: 210px; }
+    .contact .section-label { color: #9aa9bc; }
     .contact h2 { font-size: 24px; line-height: 1.25; margin-top: 18px; max-width: 300px; }
-    .contact p { color: #b9bcb3; font-size: 12px; margin: 10px 0 22px; }
+    .contact p { color: #9aa9bc; font-size: 12px; margin: 10px 0 22px; }
     .contact-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .email-button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: var(--ink); font-size: 12px; font-weight: 800; }
+    .email-button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; background: var(--accent); color: #08111c; font-size: 12px; font-weight: 800; }
     .socials { display: flex; gap: 8px; }
-    .socials a { width: 34px; height: 34px; border: 1px solid #ffffff30; border-radius: 50%; display: grid; place-items: center; font-size: 11px; transition: background .2s; }
-    .socials a:hover { background: #ffffff20; }
+    .socials a { width: 34px; height: 34px; border: 1px solid #344357; border-radius: 50%; display: grid; place-items: center; font-size: 11px; transition: background .2s; }
+    .socials a:hover { background: #24364b; }
     footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 22px 3px 0; color: var(--muted); font-size: 11px; }
     footer .made { display: flex; align-items: center; gap: 5px; }
     .heart { color: #8cae3d; }
@@ -136,7 +140,7 @@
       <article class="card hero">
         <div>
           <div class="eyebrow">HELLO, WORLD</div>
-          <h1>你好，我是<br><span class="highlight">Aladdin.</span></h1>
+          <h1>你好，我是<br><span class="highlight">Aladdin</span></h1>
           <p class="intro">一个保持好奇、持续创造的人。这里记录我的想法、作品，以及生活中值得分享的小事。</p>
         </div>
         <div class="hero-bottom">
@@ -151,7 +155,7 @@
           <span aria-hidden="true">✳</span>
         </div>
         <div class="avatar-wrap">
-          <img class="avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=85" alt="个人头像" />
+          <img class="avatar" src="aladdin_moore_portrait.png" alt="个人头像" />
           <span class="avatar-badge" aria-hidden="true">✦</span>
         </div>
         <div class="profile-name">Aladdin Moore</div>
@@ -167,23 +171,23 @@
           <span class="small-note">FIND ME ONLINE ↗</span>
         </div>
         <div class="link-list">
-          <a class="link-item" href="https://github.com/heshixian98-one" target="_blank" rel="noopener noreferrer">
+          <a class="link-item" href="https://github.com/" target="_blank" rel="noopener noreferrer">
             <span class="link-icon" aria-hidden="true">⌘</span><span class="link-copy"><strong>GitHub</strong><small>代码与开源项目</small></span><span class="arrow">↗</span>
           </a>
-          <a class="link-item" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer">
-            <span class="link-icon" aria-hidden="true">in</span><span class="link-copy"><strong>LinkedIn</strong><small>职业经历与动态</small></span><span class="arrow">↗</span>
+          <a class="link-item" href="blog_first_post.html">
+            <span class="link-icon" aria-hidden="true">in</span><span class="link-copy"><strong>博客入口</strong><small>阅读文章与个人思考</small></span><span class="arrow">↗</span>
           </a>
-          <a class="link-item" href="https://www.x.com/Aladdin_Moore" target="_blank" rel="noopener noreferrer">
+          <a class="link-item" href="https://www.x.com/" target="_blank" rel="noopener noreferrer">
             <span class="link-icon" aria-hidden="true">𝕏</span><span class="link-copy"><strong>X / Twitter</strong><small>随手记录与分享</small></span><span class="arrow">↗</span>
           </a>
-          <a class="link-item" href="https://www.notion.so/" target="_blank" rel="noopener noreferrer">
-            <span class="link-icon" aria-hidden="true">▤</span><span class="link-copy"><strong>Notion</strong><small>笔记与知识整理</small></span><span class="arrow">↗</span>
+          <a class="link-item" href="https://t.me/your_username" target="_blank" rel="noopener noreferrer">
+            <span class="link-icon" aria-hidden="true">▤</span><span class="link-copy"><strong>Telegram 二维码</strong><small>点击添加 Telegram 好友</small></span><span class="arrow">↗</span>
           </a>
-          <a class="link-item" href="mailto:aladdin@12609895.xyz">
-            <span class="link-icon" aria-hidden="true">✉</span><span class="link-copy"><strong>电子邮件</strong><small>aladdin@12609895.xyz</small></span><span class="arrow">↗</span>
+          <a class="link-item" href="mailto:hello@example.com">
+            <span class="link-icon" aria-hidden="true">✉</span><span class="link-copy"><strong>电子邮件</strong><small>hello@example.com</small></span><span class="arrow">↗</span>
           </a>
           <a class="link-item" href="#contact">
-            <span <img class="telegram-qr" src="telegram.png" alt="Telegram 二维码" />☏</span><span class="link-copy"><strong>联系我</strong><small>聊聊想法与合作</small></span><span class="arrow">↗</span>
+            <span class="link-icon" aria-hidden="true">☏</span><span class="link-copy"><strong>Get in touch</strong><small>直接进入联系页面</small></span><span class="arrow">↗</span>
           </a>
         </div>
       </section>
@@ -208,7 +212,7 @@
           <p>欢迎交流、合作，或只是打个招呼。</p>
         </div>
         <div class="contact-actions">
-          <a class="email-button" href="mailto:aladdin@12609895.xyz">给我发邮件 <span aria-hidden="true">↗</span></a>
+          <a class="email-button" href="mailto:hello@example.com">给我发邮件 <span aria-hidden="true">↗</span></a>
           <div class="socials" aria-label="社交链接">
             <a href="https://github.com/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">GH</a>
             <a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a>
@@ -219,7 +223,7 @@
     </section>
 
     <footer>
-      <span>© <span id="year">2026</span> Alex Chen. 保留所有权利。</span>
+      <span>© <span id="year">2026</span> Aladdin Moore. 保留所有权利。</span>
       <span class="made">用一点点 <span class="heart" aria-hidden="true">♥</span> 制作</span>
     </footer>
   </main>
