@@ -39,6 +39,12 @@
     @media(max-width:560px){header{padding:20px 0}main{padding-top:42px}}
     .turnstile-wrap { margin: 16px 0 12px; min-height: 65px; }
     .turnstile-wrap .cf-turnstile { max-width: 100%; }
+    .admin-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+    .admin-btn{background:#243449;border:1px solid #40536b;padding:8px 13px;font-size:12px}
+    .admin-btn:hover{background:#30445e}
+    .delete-btn{background:#7f1d2d;border:1px solid #a43a4a;padding:6px 10px;font-size:12px}
+    .delete-btn:hover{background:#a51d35}
+    .admin-note{font-size:12px;color:#a9c7ff}
   </style>
 </head>
 <body>
@@ -60,7 +66,7 @@
             <label for="message">留言内容</label>
             <textarea id="message" name="message" maxlength="3000" placeholder="写下你的留言……" required></textarea>
             <div class="turnstile-wrap">
-              <div class="cf-turnstile" data-sitekey="0x4AAAAAAFpStdD6pTMcnuhN" data-action="guestbook" data-theme="dark"></div>
+              <div class="cf-turnstile" data-sitekey="REPLACE_WITH_TURNSTILE_SITEKEY" data-action="guestbook" data-theme="dark"></div>
             </div>
             <div class="actions"><button id="submit-button" type="submit">提交留言 ↗</button><span class="small">最多 3000 字 · 10 分钟内最多提交 3 条</span></div>
             <div class="status" id="status" role="status" aria-live="polite"></div>
@@ -68,6 +74,7 @@
         </section>
         <section class="panel" aria-labelledby="list-title">
           <div class="list-head"><h2 id="list-title">大家的留言</h2><span class="count" id="count">正在加载…</span></div>
+          <div class="admin-tools"><button type="button" class="admin-btn" id="admin-login">管理员登录</button><button type="button" class="admin-btn" id="admin-logout" hidden>退出管理员</button><span class="admin-note" id="admin-state" aria-live="polite"></span></div>
           <div id="messages" aria-live="polite"><p class="empty">正在加载留言…</p></div>
           <div class="actions"><button type="button" id="refresh-button">刷新留言</button></div>
           <p class="footnote">留言按时间倒序显示。若发现不当内容，请联系网站管理员处理。</p>
@@ -85,6 +92,11 @@
     const statusBox = document.getElementById("status");
     const messagesBox = document.getElementById("messages");
     const countBox = document.getElementById("count");
+    const adminLoginButton = document.getElementById("admin-login");
+    const adminLogoutButton = document.getElementById("admin-logout");
+    const adminState = document.getElementById("admin-state");
+    const ADMIN_SESSION_KEY = "aladdin_guestbook_admin_token";
+    let adminToken = sessionStorage.getItem(ADMIN_SESSION_KEY) || "";
     document.getElementById("year").textContent = new Date().getFullYear();
 
     function setStatus(message, kind) {
@@ -101,6 +113,9 @@
     }
     function renderMessages(items) {
       messagesBox.replaceChildren();
+      adminLoginButton.hidden = Boolean(adminToken);
+      adminLogoutButton.hidden = !adminToken;
+      adminState.textContent = adminToken ? "管理员模式已开启" : "";
       countBox.textContent = items.length + " 条留言";
       if (!items.length) {
         const empty = document.createElement("p");
@@ -126,6 +141,39 @@
         body.className = "message-body";
         body.textContent = String(item.message ?? "");
         article.append(meta, body);
+        if (adminToken) {
+          const tools = document.createElement("div");
+          tools.className = "actions";
+          const deleteButton = document.createElement("button");
+          deleteButton.type = "button";
+          deleteButton.className = "delete-btn";
+          deleteButton.textContent = "删除留言";
+          deleteButton.addEventListener("click", async () => {
+            if (!window.confirm("确定删除这条留言吗？此操作无法撤销。")) return;
+            deleteButton.disabled = true;
+            deleteButton.textContent = "正在删除…";
+            try {
+              const response = await fetch(API_URL + "?id=" + encodeURIComponent(item.id), {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + adminToken, "Accept": "application/json" }
+              });
+              const data = await response.json().catch(() => ({}));
+              if (response.status === 401) {
+                adminToken = "";
+                sessionStorage.removeItem(ADMIN_SESSION_KEY);
+                throw new Error("管理员令牌无效，请重新登录。");
+              }
+              if (!response.ok) throw new Error(data.error || "删除失败（HTTP " + response.status + "）");
+              await loadMessages();
+            } catch (error) {
+              adminState.textContent = error.message;
+              deleteButton.disabled = false;
+              deleteButton.textContent = "删除留言";
+            }
+          });
+          tools.appendChild(deleteButton);
+          article.appendChild(tools);
+        }
         messagesBox.appendChild(article);
       });
     }
@@ -185,8 +233,27 @@
         if (window.turnstile) window.turnstile.reset();
       }
     });
+    adminLoginButton.addEventListener("click", () => {
+      const token = window.prompt("请输入管理员令牌：");
+      if (token === null) return;
+      if (!token.trim()) { adminState.textContent = "令牌不能为空。"; return; }
+      adminToken = token.trim();
+      sessionStorage.setItem(ADMIN_SESSION_KEY, adminToken);
+      renderAdminRefresh();
+    });
+    function renderAdminRefresh() {
+      adminLoginButton.hidden = Boolean(adminToken);
+      adminLogoutButton.hidden = !adminToken;
+      adminState.textContent = adminToken ? "管理员模式已开启；删除操作需要服务器验证。" : "";
+      loadMessages();
+    }
+    adminLogoutButton.addEventListener("click", () => {
+      adminToken = "";
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      renderAdminRefresh();
+    });
     document.getElementById("refresh-button").addEventListener("click", loadMessages);
-    loadMessages();
+    renderAdminRefresh();
   </script>
 </body>
 </html>
