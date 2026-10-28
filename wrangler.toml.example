@@ -1,0 +1,9 @@
+# 可选配置示例。复制为 wrangler.toml 后，替换 database_id。
+# 使用 Dashboard 配置 Pages D1 binding 时，不一定需要此文件。
+name = "aladdin-moore-blog"
+pages_build_output_dir = "."
+
+[[d1_databases]]
+binding = "DB"
+database_name = "aladdin-guestbook"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"

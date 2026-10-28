@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b111a">
+  <meta name="description" content="Aladdin Moore 的留言板，欢迎留下想法和问候。">
+  <title>留言板 · Aladdin Moore</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b111a;--panel:#111b29;--line:#26364a;--text:#edf3fb;--muted:#93a4ba;--blue:#1e40af;--blueHover:#1d4ed8}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 0%,#14243a 0,transparent 42%),var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+    a{color:inherit;text-decoration:none}.wrap{width:min(900px,calc(100% - 36px));margin:0 auto}
+    header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px 0;border-bottom:1px solid rgba(147,164,186,.15)}
+    .brand{font-weight:750;letter-spacing:-.03em}.back{color:#b8c8dc;font-size:13px}.back:hover{color:white}
+    main{padding:58px 0 72px}.eyebrow{color:#8eb9ff;font-size:11px;font-weight:750;letter-spacing:.18em}
+    h1{font-size:clamp(34px,6vw,54px);line-height:1.15;letter-spacing:-.045em;margin:15px 0 16px}
+    .intro{max-width:620px;color:var(--muted);font-size:15px;margin:0 0 32px}
+    .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+    .panel{background:rgba(17,27,41,.88);border:1px solid var(--line);border-radius:20px;padding:clamp(20px,4vw,30px);box-shadow:0 20px 60px rgba(0,0,0,.16)}
+    .panel h2{font-size:19px;margin:0 0 6px}.hint{color:var(--muted);font-size:12px;margin:0 0 20px}
+    label{display:block;font-size:13px;font-weight:650;margin:16px 0 8px}
+    input,textarea{width:100%;border:1px solid #31445c;border-radius:11px;background:#0d1623;color:var(--text);padding:13px 14px;font:inherit;font-size:14px;outline:none}
+    input:focus,textarea:focus{border-color:#5487dc;box-shadow:0 0 0 3px rgba(59,130,246,.13)}
+    textarea{min-height:140px;resize:vertical}
+    .actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
+    button{border:0;border-radius:999px;padding:12px 19px;background:var(--blue);color:white;font-weight:700;font-size:13px;cursor:pointer}
+    button:hover{background:var(--blueHover)}button:disabled{opacity:.6;cursor:wait}
+    .small{color:var(--muted);font-size:12px}.status{display:none;margin-top:16px;padding:12px 14px;border-radius:10px;font-size:13px}
+    .status.ok{display:block;background:#132b25;color:#b8f2d7}.status.err{display:block;background:#351b24;color:#ffc6d0}
+    .list-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:18px}
+    .count{font-size:12px;color:var(--muted)}.message{padding:18px 0;border-top:1px solid rgba(147,164,186,.16)}
+    .message:first-child{border-top:0;padding-top:0}.message-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+    .message-name{font-weight:700;font-size:14px}.message-date{font-size:11px;color:#71849d}
+    .message-body{font-size:14px;color:#d4dfed;white-space:pre-wrap;overflow-wrap:anywhere}
+    .empty{color:var(--muted);font-size:13px;padding:14px 0}.footnote{color:#71849d;font-size:12px;margin-top:14px}
+    footer{color:#70839b;font-size:12px;padding:0 0 28px}
+    @media(min-width:780px){.layout{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}}
+    @media(max-width:560px){header{padding:20px 0}main{padding-top:42px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header><a class="brand" href="index.html">Aladdin Moore</a><a class="back" href="index.html">← 返回首页</a></header>
+    <main>
+      <div class="eyebrow">GUESTBOOK · 留言板</div>
+      <h1>留下你的想法。<br>也欢迎说声你好。</h1>
+      <p class="intro">感谢你来到这里。无论是文章反馈、技术交流，还是简单的问候，都欢迎写下来。提交后的公开留言会显示在下方。</p>
+      <div class="layout">
+        <section class="panel" aria-labelledby="form-title">
+          <h2 id="form-title">写一条留言</h2>
+          <p class="hint">留言提交后会保存到云端，并向所有访客公开。邮箱为选填项，请勿填写敏感信息。</p>
+          <form id="guestbook-form">
+            <label for="name">昵称</label>
+            <input id="name" name="name" maxlength="60" placeholder="你希望我怎么称呼你" autocomplete="nickname" required>
+            <label for="email">邮箱（选填，不公开显示）</label>
+            <input id="email" name="email" type="email" maxlength="120" placeholder="仅存储在数据库中，不展示在留言列表" autocomplete="email">
+            <label for="message">留言内容</label>
+            <textarea id="message" name="message" maxlength="3000" placeholder="写下你的留言……" required></textarea>
+            <div class="actions"><button id="submit-button" type="submit">提交留言 ↗</button><span class="small">最多 3000 字</span></div>
+            <div class="status" id="status" role="status" aria-live="polite"></div>
+          </form>
+        </section>
+        <section class="panel" aria-labelledby="list-title">
+          <div class="list-head"><h2 id="list-title">大家的留言</h2><span class="count" id="count">正在加载…</span></div>
+          <div id="messages" aria-live="polite"><p class="empty">正在加载留言…</p></div>
+          <div class="actions"><button type="button" id="refresh-button">刷新留言</button></div>
+          <p class="footnote">留言按时间倒序显示。若发现不当内容，请联系网站管理员处理。</p>
+        </section>
+      </div>
+    </main>
+    <footer>© <span id="year"></span> Aladdin Moore · 感谢你的留言</footer>
+  </div>
+  <script>
+    // Cloudflare Pages Functions 提供 /api/messages，无需在前端配置数据库密钥。
+    const API_URL = "/api/messages";
+    const form = document.getElementById("guestbook-form");
+    const submitButton = document.getElementById("submit-button");
+    const statusBox = document.getElementById("status");
+    const messagesBox = document.getElementById("messages");
+    const countBox = document.getElementById("count");
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    function setStatus(message, kind) {
+      statusBox.textContent = message;
+      statusBox.className = "status " + kind;
+    }
+    function formatDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      return new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      }).format(date);
+    }
+    function renderMessages(items) {
+      messagesBox.replaceChildren();
+      countBox.textContent = items.length + " 条留言";
+      if (!items.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "还没有留言，来写下第一条吧。";
+        messagesBox.appendChild(empty);
+        return;
+      }
+      items.forEach(item => {
+        const article = document.createElement("article");
+        article.className = "message";
+        const meta = document.createElement("div");
+        meta.className = "message-meta";
+        const name = document.createElement("span");
+        name.className = "message-name";
+        name.textContent = String(item.name ?? "");
+        const date = document.createElement("time");
+        date.className = "message-date";
+        date.dateTime = item.created_at || "";
+        date.textContent = formatDate(item.created_at);
+        meta.append(name, date);
+        const body = document.createElement("div");
+        body.className = "message-body";
+        body.textContent = String(item.message ?? "");
+        article.append(meta, body);
+        messagesBox.appendChild(article);
+      });
+    }
+    async function loadMessages() {
+      countBox.textContent = "正在加载…";
+      try {
+        const response = await fetch(API_URL, { headers: { "Accept": "application/json" } });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "读取留言失败（HTTP " + response.status + "）");
+        renderMessages(Array.isArray(data.messages) ? data.messages : []);
+      } catch (error) {
+        countBox.textContent = "加载失败";
+        messagesBox.replaceChildren();
+        const info = document.createElement("p");
+        info.className = "empty";
+        info.textContent = error.message + "。请确认已部署 Pages Functions、绑定 D1 数据库并执行建表 SQL。";
+        messagesBox.appendChild(info);
+      }
+    }
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const message = document.getElementById("message").value.trim();
+      if (!name || !message) {
+        setStatus("请填写昵称和留言内容。", "err");
+        return;
+      }
+      if (name.length > 60 || email.length > 120 || message.length > 3000) {
+        setStatus("输入内容超出长度限制，请修改后重试。", "err");
+        return;
+      }
+      submitButton.disabled = true;
+      submitButton.textContent = "正在提交…";
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ name, email: email || null, message })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "提交失败（HTTP " + response.status + "）");
+        form.reset();
+        setStatus("留言已保存！正在更新留言列表。", "ok");
+        await loadMessages();
+      } catch (error) {
+        setStatus("提交失败：" + error.message + "。请稍后重试。", "err");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "提交留言 ↗";
+      }
+    });
+    document.getElementById("refresh-button").addEventListener("click", loadMessages);
+    loadMessages();
+  </script>
+</body>
+</html>
