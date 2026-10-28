@@ -45,6 +45,28 @@ export async function onRequest(context) {
   const { request, env } = context;
   if (!env.DB) return json({ error: "数据库未绑定。请在 Pages 项目中将 D1 数据库绑定为 DB。" }, 503);
 
+  // 管理员删除接口：必须配置 GUESTBOOK_ADMIN_TOKEN，并通过 Authorization Bearer 验证。
+  if (request.method === "DELETE") {
+    const configuredToken = env.GUESTBOOK_ADMIN_TOKEN;
+    if (!configuredToken) return json({ error: "管理员功能尚未配置。请在 Pages Secrets 中设置 GUESTBOOK_ADMIN_TOKEN。" }, 503);
+    const authorization = request.headers.get("Authorization") || "";
+    const suppliedToken = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+    if (!suppliedToken || suppliedToken.length > 512) return json({ error: "管理员验证失败，请重新登录。" }, 401);
+    // Compare SHA-256 digests to avoid a direct early-exit string comparison.
+    const [expectedDigest, suppliedDigest] = await Promise.all([sha256Hex(configuredToken), sha256Hex(suppliedToken)]);
+    if (expectedDigest !== suppliedDigest) return json({ error: "管理员验证失败，请重新登录。" }, 401);
+    const url = new URL(request.url);
+    const id = Number(url.searchParams.get("id"));
+    if (!Number.isSafeInteger(id) || id <= 0) return json({ error: "留言编号无效。" }, 400);
+    try {
+      const result = await env.DB.prepare("DELETE FROM guestbook_messages WHERE id = ?").bind(id).run();
+      if (!result.meta || result.meta.changes === 0) return json({ error: "这条留言不存在或已被删除。" }, 404);
+      return json({ ok: true, deletedId: id });
+    } catch {
+      return json({ error: "删除留言失败，请检查 D1 数据库和后端日志。" }, 500);
+    }
+  }
+
   if (request.method === "GET") {
     try {
       const result = await env.DB.prepare(
@@ -57,7 +79,7 @@ export async function onRequest(context) {
   }
 
   if (request.method !== "POST") {
-    return new Response(null, { status: 405, headers: { Allow: "GET, POST" } });
+    return new Response(null, { status: 405, headers: { Allow: "GET, POST, DELETE" } });
   }
 
   const origin = request.headers.get("Origin");
@@ -105,13 +127,13 @@ export async function onRequest(context) {
       return json({ error: "提交过于频繁。每个网络地址 10 分钟内最多提交 3 条，请稍后再试。" }, 429, { "Retry-After": "600" });
     }
     await env.DB.prepare(
-  "INSERT INTO guestbook_rate_events (ip_hash, created_at) VALUES (?, CAST(strftime('%s', 'now') AS INTEGER))"
-).bind(ipHash).run();
+      "INSERT INTO guestbook_rate_events (ip_hash, created_at) VALUES (?, CAST(strftime('%s', 'now') AS INTEGER))"
+    ).bind(ipHash).run();
     // Opportunistic cleanup of expired events to keep the rate-limit table small.
     if (Math.random() < 0.02) {
       await env.DB.prepare(
-  "DELETE FROM guestbook_rate_events WHERE created_at < CAST(strftime('%s', 'now', '-1 day') AS INTEGER)"
-).run();
+        "DELETE FROM guestbook_rate_events WHERE created_at < CAST(strftime('%s', 'now', '-1 day') AS INTEGER)"
+      ).run();
     }
   } catch {
     return json({ error: "频率限制服务暂时不可用，请稍后重试。" }, 503);
