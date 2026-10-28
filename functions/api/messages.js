@@ -98,16 +98,20 @@ export async function onRequest(context) {
   const ipHash = await sha256Hex(clientIp);
   try {
     const countResult = await env.DB.prepare(
-      "SELECT COUNT(*) AS n FROM guestbook_rate_events WHERE ip_hash = ? AND created_at >= datetime('now', ? )"
+      "SELECT COUNT(*) AS n FROM guestbook_rate_events WHERE ip_hash = ? AND created_at >= CAST(strftime('%s', 'now', ?) AS INTEGER)"
     ).bind(ipHash, `-${RATE_WINDOW_MINUTES} minutes`).first();
     const count = Number(countResult?.n || 0);
     if (count >= RATE_MAX_SUBMISSIONS) {
       return json({ error: "提交过于频繁。每个网络地址 10 分钟内最多提交 3 条，请稍后再试。" }, 429, { "Retry-After": "600" });
     }
-    await env.DB.prepare("INSERT INTO guestbook_rate_events (ip_hash) VALUES (?)").bind(ipHash).run();
+    await env.DB.prepare(
+  "INSERT INTO guestbook_rate_events (ip_hash, created_at) VALUES (?, CAST(strftime('%s', 'now') AS INTEGER))"
+).bind(ipHash).run();
     // Opportunistic cleanup of expired events to keep the rate-limit table small.
     if (Math.random() < 0.02) {
-      await env.DB.prepare("DELETE FROM guestbook_rate_events WHERE created_at < datetime('now', '-1 day')").run();
+      await env.DB.prepare(
+  "DELETE FROM guestbook_rate_events WHERE created_at < CAST(strftime('%s', 'now', '-1 day') AS INTEGER)"
+).run();
     }
   } catch {
     return json({ error: "频率限制服务暂时不可用，请稍后重试。" }, 503);
