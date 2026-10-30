@@ -40,3 +40,65 @@ a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
 .hero{padding-top:36px}.layout{grid-template-columns:1fr}.toc{position:static;order:-1}
 .toc a{display:inline-block;margin-right:10px}.article h2{font-size:22px}.lede{font-size:16px}.footer{flex-direction:column}
 }
+
+/* Phase 9: readable tables and architecture/code panels.
+   Additive rules only: preserve the existing dark theme, typography, spacing and TOC. */
+.article table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  margin:22px 0 28px;
+  overflow:hidden;
+  border:1px solid #34465b;
+  border-radius:12px;
+  background:#101923;
+  color:#cbd6e5;
+  font-size:14px;
+  line-height:1.7;
+}
+.article thead th{
+  background:#1b2b3d;
+  color:#eaf3ff;
+  font-weight:700;
+  text-align:left;
+  border-bottom:1px solid #45617f;
+}
+.article th,.article td{
+  padding:11px 14px;
+  vertical-align:top;
+  border-right:1px solid #2b3b4e;
+  border-bottom:1px solid #2b3b4e;
+}
+.article tr > :last-child{border-right:0}
+.article tbody tr:last-child td{border-bottom:0}
+.article tbody tr:nth-child(even){background:#142131}
+.article tbody tr:hover{background:#1a2b3e}
+.article td{color:#c7d3e2}
+.article th{white-space:nowrap}
+
+/* Original architecture sketches are stored as pre.code blocks.
+   Give them a distinct framed panel without changing their text or layout. */
+.article pre.code{
+  display:block;
+  max-width:100%;
+  overflow-x:auto;
+  margin:22px 0 28px;
+  padding:20px 22px;
+  border:1px solid #344b64;
+  border-radius:14px;
+  background:linear-gradient(145deg,#142234 0%,#101923 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 24px rgba(0,0,0,.14);
+  color:#d8e6f6;
+  font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  white-space:pre;
+  tab-size:4;
+}
+.article pre.code::-webkit-scrollbar{height:8px}
+.article pre.code::-webkit-scrollbar-thumb{background:#405873;border-radius:99px}
+.article pre.code::-webkit-scrollbar-track{background:#0d151f;border-radius:99px}
+
+@media(max-width:760px){
+  .article table{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;font-size:13px}
+  .article th,.article td{padding:9px 11px;min-width:100px}
+  .article pre.code{padding:16px;font-size:12px}
+}
