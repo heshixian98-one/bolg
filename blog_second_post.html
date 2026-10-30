@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1017">
+<meta name="description" content="以静态 HTML、GitHub 和 Cloudflare Pages 为例，介绍个人博客的目录规划、文章发布、自动部署、上线检查与安全维护。">
+<title>从 GitHub 到 Cloudflare Pages：搭建并维护一个个人博客 — Aladdin Moore</title>
+<style>
+:root{--bg:#0b1017;--card:#111923;--ink:#edf2fa;--muted:#9aa9bc;--line:#202c3a;--accent:#83baff;--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","PingFang SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.85;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}.wrap{width:min(900px,calc(100% - 32px));margin:auto}.nav{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--line);font-size:13px}.brand{font-weight:800;color:var(--ink);letter-spacing:.02em}.article-nav{display:flex;align-items:center;gap:14px}.article-nav a{font-size:12px;color:var(--muted)}.article-nav a:hover,.article-nav a[aria-current="page"]{color:var(--accent)}.back{color:var(--muted);white-space:nowrap}.hero{padding:54px 0 30px}.tag{display:inline-block;padding:5px 10px;border:1px solid #29405a;border-radius:99px;color:var(--accent);font-size:12px}.hero h1{font-size:clamp(29px,5vw,43px);line-height:1.3;letter-spacing:-.035em;margin:18px 0 14px}.meta{font-size:13px;color:var(--muted)}.lede{font-size:17px;color:#c4cfde;max-width:760px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:30px;align-items:start;padding-bottom:64px}.article{min-width:0}.article h2{font-size:24px;line-height:1.4;margin:38px 0 12px;letter-spacing:-.02em}.article h3{font-size:18px;margin:25px 0 8px}.article p,.article li{color:#c2ccda;font-size:15px}.article strong{color:var(--ink)}.article ul,.article ol{padding-left:23px}.article li{margin:6px 0}.toc{position:sticky;top:20px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}.toc h3{margin:0 0 10px;font-size:13px}.toc a{display:block;font-size:12px;color:var(--muted);padding:5px 0}.toc a:hover{color:var(--accent)}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:16px 0}table{width:100%;border-collapse:collapse;min-width:520px;font-size:13px}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}th{background:#172333;color:#e9f1fc}td{color:#c2ccda}tr:last-child td{border-bottom:0}.note{padding:14px 16px;border-left:3px solid var(--accent);background:#101c2a;border-radius:0 10px 10px 0;color:#c2ccda;font-size:14px;margin:18px 0}.code{white-space:pre;overflow-x:auto;background:#080d13;border:1px solid var(--line);border-radius:12px;padding:16px;font:13px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c9d8ed}.sources{font-size:13px}.sources li{overflow-wrap:anywhere}.footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px}.toplink{display:inline-block;margin-top:16px;font-size:13px}
+@media(max-width:760px){.nav{flex-wrap:wrap;gap:12px}.article-nav{order:3;width:100%;justify-content:center;padding-top:10px;border-top:1px solid var(--line)}.hero{padding-top:36px}.layout{grid-template-columns:1fr}.toc{position:static;order:-1}.toc a{display:inline-block;margin-right:10px}.article h2{font-size:22px}.lede{font-size:16px}.footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="nav">
+  <a class="brand" href="index.html">Aladdin Moore</a>
+  <nav class="article-nav" aria-label="主导航"><a href="index.html">首页</a><a href="blog.html" aria-current="page">博客</a><a href="guestbook.html">留言板</a></nav>
+  <a class="back" href="blog.html">← 返回博客</a>
+</header>
+<header class="hero" id="top">
+  <span class="tag">个人网站 · GitHub · Cloudflare Pages</span>
+  <h1>从 GitHub 到 Cloudflare Pages：搭建并维护一个个人博客</h1>
+  <div class="meta">作者：Aladdin Moore　·　预计阅读 7–9 分钟　·　2026 年 10 月 30 日</div>
+  <p class="lede">个人博客不一定需要复杂的框架。把页面、文章和必要的后端功能整理清楚，再配合版本管理与自动部署，就能建立一套容易理解、便于维护的写作流程。</p>
+</header>
+<div class="layout">
+<main class="article">
+<p>做个人网站时，很容易一开始就被框架、数据库、构建工具和各种部署选项弄得复杂。其实，如果网站主要由个人介绍、文章页面和少量交互组成，先从静态 HTML 开始，往往更容易理解每个文件的作用，也更方便逐步扩展。</p>
+<p>本文以一个常见的个人博客工作流为例：网页文件放在 GitHub 仓库中，由 Cloudflare Pages 连接仓库并负责发布。文章仍然是独立的 HTML 文件，文章列表和首页预览通过普通链接指向它们。这个方式不依赖专门的内容管理系统，适合希望直接掌握文件和发布过程的个人站点。</p>
+
+<h2 id="why-static">一、先选择适合自己的网站结构</h2>
+<p>如果网站内容以个人介绍、联系信息和文章为主，静态 HTML 可以覆盖大部分需求。每个页面由浏览器直接读取，页面之间使用相对路径链接，不需要为每篇文章搭建数据库或后台编辑器。</p>
+<ul>
+<li><strong>首页：</strong>展示个人介绍、导航、联系方式和最新文章预览。</li>
+<li><strong>博客列表：</strong>集中展示文章标题、分类、日期和摘要。</li>
+<li><strong>文章页面：</strong>每篇文章单独保存，便于编辑、备份和分享。</li>
+<li><strong>独立功能：</strong>留言板等需要数据写入或验证的功能，可以继续交给 Pages Functions 和数据库处理。</li>
+</ul>
+<p>静态页面并不意味着网站不能有动态功能。页面本身可以保持简单，而需要服务端处理的请求交给后端函数。关键是把网页内容、后端逻辑和机密配置分开管理。</p>
+
+<h2 id="structure">二、把仓库目录整理清楚</h2>
+<p>目录不需要很复杂，但文件名和链接路径要保持一致。一个小型个人博客可以采用这样的结构：</p>
+<pre class="code">bolg/
+├── index.html                 # 个人主页
+├── blog.html                  # 文章列表
+├── blog_first_post.html       # 第一篇文章
+├── blog_second_post.html      # 第二篇文章
+├── guestbook.html             # 留言板页面
+├── aladdin_moore_portrait.png # 头像图片
+├── Telegram.png               # 联系二维码图片
+└── functions/
+    └── api/
+        └── messages.js        # 留言板 API</pre>
+<p>以上是目录示意，具体文件以自己的 GitHub 仓库为准。对于现有网站，新增文章时可以继续沿用根目录的命名方式，不必为了追求整齐而随意移动已经被链接引用的文件。</p>
+<div class="note">文件名大小写也要保持一致。例如链接写成 <code>blog_second_post.html</code>，仓库中的文件也必须使用完全相同的大小写；图片路径同样如此。</div>
+
+<h2 id="write">三、每次写新文章，按三个位置更新</h2>
+<h3>1. 新建独立文章文件</h3>
+<p>先复制一份现有文章页面作为模板，再修改页面标题、描述、分类、发布日期、预计阅读时间和正文。沿用同一套 CSS，可以让新文章自然继承网站的深色背景、蓝色强调色、目录和移动端排版。</p>
+<p>例如，第二篇文章可以命名为 <code>blog_second_post.html</code>。文章中的导航链接、返回博客链接和目录锚点要检查一遍，确保指向真实存在的页面或标题。</p>
+<h3>2. 更新博客列表</h3>
+<p>打开 <code>blog.html</code>，在“全部文章”区域增加一张文章卡片。卡片至少包含标题链接、分类、摘要、作者、日期和阅读时间。新文章通常放在最上方，让读者先看到最新内容。</p>
+<h3>3. 更新首页最新文章预览</h3>
+<p>如果首页有“最新文章”区域，也要把标题、摘要、日期和阅读全文链接更新为新文章。这样读者从首页就能发现新内容，同时仍然可以通过博客入口查看全部文章。</p>
+<div class="note">只创建文章 HTML 文件，并不会自动让它出现在博客列表里。文章文件、博客列表和首页预览是三个独立位置，需要分别确认链接。</div>
+
+<h2 id="publish">四、通过 GitHub 提交文章</h2>
+<ol>
+<li>打开 GitHub 仓库，确认当前分支和文件目录。</li>
+<li>上传新的文章 HTML 文件到网站现有页面所在目录。</li>
+<li>上传更新后的 <code>blog.html</code> 和 <code>index.html</code>。</li>
+<li>检查文件名、扩展名和链接拼写，避免把 HTML 文件误存成 <code>.txt</code>。</li>
+<li>填写清晰的提交说明，例如“Add second blog post”，然后提交到网站使用的分支。</li>
+</ol>
+<p>使用 GitHub 管理文章的好处，是每次修改都会留下提交记录。若后来发现某次改动有问题，可以查看差异，必要时恢复到之前的版本，而不是只能依赖本地文件。</p>
+
+<h2 id="deploy">五、Cloudflare Pages 如何发布更新</h2>
+<p>当 Cloudflare Pages 项目通过 Git 集成连接到 GitHub 后，向已连接的分支推送变更会触发对应部署。对于不使用框架的静态 HTML 网站，Pages 可以直接部署 HTML、CSS、JavaScript 和图片等静态资源，不必为了发布一篇文章额外引入复杂构建步骤。</p>
+<p>如果生产分支设置为 <code>main</code>，向 <code>main</code> 提交的变更会按项目配置进入生产部署流程。Git 集成还支持预览部署；在项目启用相应分支预览设置时，可以先检查预览版本，再把确认后的内容合并到生产分支。</p>
+<ol>
+<li>在 Cloudflare 控制台打开 Workers &amp; Pages，进入对应 Pages 项目。</li>
+<li>打开部署记录，确认最新一次提交是否成功。</li>
+<li>部署成功后，访问首页和文章地址，检查是否已更新。</li>
+<li>如果部署失败，先查看构建日志和最近的文件改动，不要连续重复提交相同内容。</li>
+</ol>
+<p>Cloudflare 官方文档：<a href="https://developers.cloudflare.com/pages/configuration/git-integration/" target="_blank" rel="noopener noreferrer">Git 集成与自动部署</a>；<a href="https://developers.cloudflare.com/pages/framework-guides/deploy-anything/" target="_blank" rel="noopener noreferrer">部署静态 HTML 网站</a>。</p>
+
+<h2 id="check">六、上线后检查哪些内容</h2>
+<div class="table-wrap"><table><thead><tr><th>检查项</th><th>检查方式</th><th>常见问题</th></tr></thead><tbody>
+<tr><td>首页</td><td>打开域名根路径</td><td>首页导航或最新文章没有更新</td></tr>
+<tr><td>文章列表</td><td>打开 blog.html</td><td>文章数量、标题或链接遗漏</td></tr>
+<tr><td>文章详情</td><td>直接打开新文章网址</td><td>文件名错误、返回链接失效</td></tr>
+<tr><td>图片与样式</td><td>检查桌面和手机显示</td><td>相对路径错误、文件大小写不一致</td></tr>
+<tr><td>留言板</td><td>打开页面并检查原有功能</td><td>误覆盖了函数文件或配置</td></tr>
+</tbody></table></div>
+<p>测试时不要只从首页点击一次。建议分别直接打开首页、博客列表和文章详情页，确认每个地址都能单独访问。再用手机宽度检查导航、标题、表格和文章目录是否出现横向溢出。</p>
+
+<h2 id="security">七、把内容、后端和密钥分开</h2>
+<p>网站的公开 HTML 可以包含公开信息，例如页面文字、图片路径和 Turnstile 的 Sitekey；但私密密钥、管理员令牌和访问凭证不应该写在前端 HTML 或提交到公开仓库。</p>
+<ul>
+<li><strong>前端页面：</strong>负责显示内容和收集用户输入，不保存服务端私密凭证。</li>
+<li><strong>Pages Functions：</strong>负责需要服务端处理的 API 请求。</li>
+<li><strong>Secrets：</strong>在 Cloudflare 项目的 Variables and Secrets 设置中管理需要保密的值。</li>
+<li><strong>D1 绑定：</strong>让后端函数通过绑定访问数据库，不要把数据库管理凭证放进网页。</li>
+</ul>
+<p>留言板使用 Turnstile 时，浏览器中的小组件只是产生验证令牌的一部分；后端仍需要通过 Siteverify 验证令牌。不能因为页面能够显示验证组件，就省略服务器端验证。</p>
+<p>可进一步阅读 Cloudflare 官方说明：<a href="https://developers.cloudflare.com/pages/functions/bindings/" target="_blank" rel="noopener noreferrer">Pages Functions 绑定与 Secrets</a>；<a href="https://developers.cloudflare.com/turnstile/get-started/server-side-validation/" target="_blank" rel="noopener noreferrer">Turnstile 服务端验证</a>。</p>
+
+<h2 id="routine">八、建立一个简单、可重复的更新习惯</h2>
+<ul>
+<li>发布前先备份当前版本，尤其是首页和留言板相关文件。</li>
+<li>一次提交尽量只处理一类改动，例如一篇文章及其列表入口。</li>
+<li>提交说明写清楚改了什么，方便日后查找。</li>
+<li>保留现有文件路径；确实需要移动文件时，同步更新所有引用。</li>
+<li>上线后检查部署状态和页面链接，再开始下一次改动。</li>
+</ul>
+<p>个人博客最重要的不是一开始就拥有复杂的编辑系统，而是建立一套自己能理解、能检查、能恢复的发布流程。只要目录清楚、链接准确、密钥妥善保管，静态 HTML 也能成为一个长期维护的个人空间。</p>
+
+<h2 id="summary">总结</h2>
+<p>从 GitHub 到 Cloudflare Pages 的个人博客工作流，可以归纳为：写好独立文章页面、更新博客列表和首页预览、提交到正确分支、检查部署结果、验证页面和功能。将公开内容与后端逻辑分开，并把密钥放在安全配置中，就能在保持简单的同时，逐步扩展网站能力。</p>
+
+<h2 id="references">参考资料</h2>
+<ol class="sources">
+<li><a href="https://developers.cloudflare.com/pages/configuration/git-integration/" target="_blank" rel="noopener noreferrer">Cloudflare Pages：Git 集成</a></li>
+<li><a href="https://developers.cloudflare.com/pages/framework-guides/deploy-anything/" target="_blank" rel="noopener noreferrer">Cloudflare Pages：部署静态 HTML</a></li>
+<li><a href="https://developers.cloudflare.com/pages/functions/bindings/" target="_blank" rel="noopener noreferrer">Cloudflare Pages Functions：Bindings、环境变量与 Secrets</a></li>
+<li><a href="https://developers.cloudflare.com/turnstile/get-started/server-side-validation/" target="_blank" rel="noopener noreferrer">Cloudflare Turnstile：服务端令牌验证</a></li>
+</ol>
+<a class="toplink" href="#top">↑ 返回文章顶部</a>
+</main>
+<aside class="toc"><h3>文章目录</h3>
+<a href="#why-static">一、选择网站结构</a>
+<a href="#structure">二、整理仓库目录</a>
+<a href="#write">三、发布新文章</a>
+<a href="#publish">四、通过 GitHub 提交</a>
+<a href="#deploy">五、Cloudflare Pages 部署</a>
+<a href="#check">六、上线检查</a>
+<a href="#security">七、内容与密钥安全</a>
+<a href="#routine">八、更新习惯</a>
+<a href="#summary">总结</a>
+<a href="#references">参考资料</a>
+</aside>
+</div>
+<footer class="footer"><span>© <span id="year">2026</span> Aladdin Moore</span><a href="blog.html">返回博客列表 ↗</a></footer>
+</div>
+<script>document.getElementById("year").textContent=new Date().getFullYear();</script>
+</body>
+</html>
