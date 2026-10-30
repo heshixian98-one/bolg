@@ -57,6 +57,33 @@ async function put(path, content, message, env, trace=()=>{}){
 function postPage({title,category,summary,html,date,minutes}){return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1017"><meta name="description" content="${esc(summary)}"><title>${esc(title)} — Aladdin Moore</title><style>:root{--bg:#0b1017;--card:#111923;--ink:#edf2fa;--muted:#9aa9bc;--line:#202c3a;--accent:#83baff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif;line-height:1.85}.wrap{width:min(900px,calc(100% - 32px));margin:auto}.nav{display:flex;justify-content:space-between;gap:14px;padding:22px 0;border-bottom:1px solid var(--line);font-size:13px}.nav a{color:var(--accent);text-decoration:none}.hero{padding:48px 0 28px}.tag{color:var(--accent);border:1px solid #29405a;border-radius:99px;padding:5px 10px;font-size:12px}.hero h1{font-size:clamp(28px,5vw,42px);line-height:1.35}.meta,.lede{color:var(--muted)}.lede{font-size:17px}.article{padding-bottom:64px}.article h2{margin-top:38px;font-size:24px}.article h3{margin-top:26px}.article p,.article li{color:#c2ccda;font-size:15px}.article a{color:var(--accent)}.article img{max-width:100%;height:auto;border-radius:12px}.article pre,.article code{background:#080d13;border-radius:8px;padding:3px 6px;overflow:auto}.article pre{padding:16px}.article table{border-collapse:collapse;max-width:100%}.article td,.article th{border:1px solid var(--line);padding:8px}.footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:12px}</style></head><body><div class="wrap"><header class="nav"><a href="index.html">Aladdin Moore</a><nav><a href="index.html">首页</a>　<a href="blog.html">博客</a>　<a href="guestbook.html">留言板</a></nav><a href="blog.html">← 返回博客</a></header><header class="hero"><span class="tag">${esc(category)}</span><h1>${esc(title)}</h1><div class="meta">作者：Aladdin Moore · ${esc(date)} · 预计阅读 ${minutes} 分钟</div><p class="lede">${esc(summary)}</p></header><main class="article">${html}</main><footer class="footer">© ${new Date().getFullYear()} Aladdin Moore · <a href="blog.html">返回博客</a></footer></div></body></html>`;}
 function card({slug,title,category,summary,date,minutes}){return `<article class="post-card"><div><span class="category">${esc(category)}</span><h2><a href="${slug}.html">${esc(title)}</a></h2><p>${esc(summary)}</p><div class="meta">Aladdin Moore　·　${esc(date)}　·　预计阅读 ${minutes} 分钟</div></div><a class="read-link" href="${slug}.html">阅读全文 ↗</a></article>`;}
 function previewCard({slug,title,category,summary,date,minutes}){return `<article class="post-preview"><div class="post-preview-copy"><span class="post-category">${esc(category)}</span><h3><a href="${slug}.html">${esc(title)}</a></h3><p>${esc(summary)}</p><div class="post-meta">${esc(date)}　·　预计阅读 ${minutes} 分钟</div></div><a class="post-read" href="${slug}.html">阅读全文 ↗</a></article>`;}
+
+async function removeGithub(path, sha, env, trace=()=>{}) {
+  const url=`https://api.github.com/repos/${env.GITHUB_OWNER||OWNER}/${env.GITHUB_REPO||REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
+  const r=await fetch(url,{method:"DELETE",headers:{Authorization:`Bearer ${env.GITHUB_TOKEN}`,Accept:"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"Aladdin-Moore-Blog-Admin"},body:JSON.stringify({message:`Delete blog post: ${path}`,sha,branch:env.GITHUB_BRANCH||BRANCH})});
+  const raw=await r.text();trace("github-delete-response",{path,status:r.status});
+  if(!r.ok){let detail="";try{detail=JSON.parse(raw).message||"";}catch{}throw new Error(`GitHub 删除 ${path} 失败 (${r.status})${detail?": "+detail:""}`);}
+  try{return JSON.parse(raw);}catch{return {};}
+}
+function articleCards(html){
+ const start=html.indexOf("<!-- BLOG_POSTS_START -->")+"<!-- BLOG_POSTS_START -->".length,end=html.indexOf("<!-- BLOG_POSTS_END -->");
+ if(start<0||end<start)return [];
+ const area=html.slice(start,end),out=[];
+ for(const m of area.matchAll(/<article class="post-card">[\s\S]*?<\/article>/g)){
+  const block=m[0],href=block.match(/href="([a-z0-9-]+)\.html"/),title=block.match(/<h2><a[^>]*>([\s\S]*?)<\/a><\/h2>/),summary=block.match(/<\/h2>\s*<p>([\s\S]*?)<\/p>/),category=block.match(/<span class="category">([\s\S]*?)<\/span>/);
+  if(href)out.push({slug:href[1],title:(title?.[1]||href[1]).replace(/<[^>]+>/g,"").trim(),summary:(summary?.[1]||"").replace(/<[^>]+>/g,"").trim(),category:(category?.[1]||"").replace(/<[^>]+>/g,"").trim()});
+ }
+ return out;
+}
+function extractArticle(raw,slug){
+ const title=(raw.match(/<header class="hero">[\s\S]*?<h1>([\s\S]*?)<\/h1>/i)||[])[1]||"";
+ const category=(raw.match(/<span class="tag">([\s\S]*?)<\/span>/i)||[])[1]||"";
+ const summary=(raw.match(/<p class="lede">([\s\S]*?)<\/p>/i)||[])[1]||"";
+ const content=(raw.match(/<main class="article">([\s\S]*?)<\/main>/i)||[])[1]||"";
+ if(!title||!content)throw new Error("无法识别这篇文章的标准结构；为避免误改，请直接在原文件中维护。");
+ return {slug,title:title.replace(/<[^>]+>/g,"").trim(),category:category.replace(/<[^>]+>/g,"").trim(),summary:summary.replace(/<[^>]+>/g,"").trim(),content,mode:"html"};
+}
+
 export async function onRequest({request,env}){
  const requestId=request.headers.get("cf-ray")||"unknown";
  const trace=(stage,details={})=>console.log("[blog-admin]",JSON.stringify({requestId,stage,...details}));
@@ -70,6 +97,47 @@ export async function onRequest({request,env}){
  if(action==="logout")return json({ok:true},200,{"Set-Cookie":`${COOKIE}=; Path=/api/blog-admin; HttpOnly; Secure; SameSite=Strict; Max-Age=0`});
  if(!await validSession(request,env))return json({error:"登录状态已失效，请重新登录。"},401);
  if(action==="session")return json({ok:true});
+
+ if(action==="list"&&request.method==="GET"){
+  if(!env.GITHUB_TOKEN)return json({error:"请先配置 GITHUB_TOKEN。"},503);
+  try{const blog=await gh("blog.html",env,trace);if(!blog)throw new Error("找不到 blog.html。");return json({ok:true,articles:articleCards(blog.text)});}
+  catch(e){return json({error:e.message},502);}
+ }
+ if(action==="read"&&request.method==="GET"){
+  if(!env.GITHUB_TOKEN)return json({error:"请先配置 GITHUB_TOKEN。"},503);
+  const slug=url.searchParams.get("slug")||"";if(!/^[a-z0-9][a-z0-9-]{1,55}$/.test(slug))return json({error:"文章文件名不合法。"},400);
+  try{const file=await gh(`${slug}.html`,env,trace);if(!file)return json({error:"文章不存在。"},404);return json({ok:true,article:extractArticle(file.text,slug)});}
+  catch(e){return json({error:e.message},502);}
+ }
+ if(action==="delete"&&request.method==="POST"){
+  if(!env.GITHUB_TOKEN)return json({error:"请先配置 GITHUB_TOKEN。"},503);
+  const data=await request.json().catch(()=>null),slug=String(data?.slug||"");
+  if(!/^[a-z0-9][a-z0-9-]{1,55}$/.test(slug))return json({error:"文章文件名不合法。"},400);
+  if(["index","blog","admin","guestbook"].includes(slug))return json({error:"该文件不允许删除。"},400);
+  let stage="read-files";
+  try{
+   const [article,blog,index]=await Promise.all([gh(`${slug}.html`,env,trace),gh("blog.html",env,trace),gh("index.html",env,trace)]);
+   if(!article)return json({error:"文章文件不存在。"},404);
+   if(!blog||!index)throw new Error("找不到博客列表或首页文件。");
+   stage="remove-blog-card";
+   if(!blog.text.includes("<!-- BLOG_POSTS_START -->")||!blog.text.includes("<!-- BLOG_POSTS_END -->")||!index.text.includes("<!-- BLOG_LATEST_START -->")||!index.text.includes("<!-- BLOG_LATEST_END -->"))throw new Error("首页或博客列表缺少管理标记，已停止删除。");
+   const bStart=blog.text.indexOf("<!-- BLOG_POSTS_START -->")+"<!-- BLOG_POSTS_START -->".length,bEnd=blog.text.indexOf("<!-- BLOG_POSTS_END -->");
+   let area=blog.text.slice(bStart,bEnd),found=false;
+   area=area.replace(/<article class="post-card">[\s\S]*?<\/article>/g,block=>{if(block.includes(`href="${slug}.html"`)){found=true;return "";}return block;});
+   if(!found)throw new Error("博客列表中没有对应文章卡片，已停止删除。");
+   let blogText=blog.text.slice(0,bStart)+area+blog.text.slice(bEnd);
+   blogText=blogText.replace(/(\d{4} 年 · )(\d+)( 篇文章)/,(_,a,n,c)=>a+Math.max(0,Number(n)-1)+c).replace(/(\d{4} 年　·　)(\d+)( 篇文章)/,(_,a,n,c)=>a+Math.max(0,Number(n)-1)+c);
+   const iStart=index.text.indexOf("<!-- BLOG_LATEST_START -->")+"<!-- BLOG_LATEST_START -->".length,iEnd=index.text.indexOf("<!-- BLOG_LATEST_END -->");
+   let latest=index.text.slice(iStart,iEnd);
+   latest=latest.replace(/<article class="post-preview">[\s\S]*?<\/article>/g,block=>block.includes(`href="${slug}.html"`)?"":block);
+   const indexText=index.text.slice(0,iStart)+latest+index.text.slice(iEnd);
+   stage="write-blog-index";await put("blog.html",blogText,`Remove blog listing: ${slug}`,env,trace);
+   stage="write-homepage";await put("index.html",indexText,`Remove homepage link: ${slug}`,env,trace);
+   stage="delete-article";const result=await removeGithub(`${slug}.html`,article.sha,env,trace);
+   return json({ok:true,slug,commit:result.commit?.sha||"",message:"文章文件及博客列表、首页入口已提交到 GitHub。Cloudflare Pages 将自动部署，请稍后检查正式网站。"});
+  }catch(e){console.error("[blog-admin]",JSON.stringify({stage,errorName:e?.name||"Error",message:e.message}));return json({error:e.message,stage},502);}
+ }
+
  if(action==="publish"&&request.method==="POST"){
   if(!env.GITHUB_TOKEN)return json({error:"请先配置 GITHUB_TOKEN。"},503);
   const len=Number(request.headers.get("Content-Length")||0);trace("publish-body", { contentLength:len });if(len>MAX_BODY)return json({error:"提交内容过大。"},413);
