@@ -1,8 +1,62 @@
+media:
+  - name: article_images
+    label: Article images
+    input: cms-content/images
+    output: /cms-content/images
+    categories: [image]
+    extensions: [png, jpg, jpeg, webp, gif]
+    rename: safe
+
 content:
   - name: cms-test-page
-    label: CMS 测试文章
+    label: CMS 原始 HTML 测试
     type: file
     path: cms-test/test-article.html
     format: raw
     operations:
       delete: false
+
+  - name: cms-articles
+    label: CMS 结构化文章测试
+    type: collection
+    path: cms-content/posts
+    filename: "{slug}.yml"
+    format: yaml
+    view:
+      primary: title
+      fields: [title, category, date]
+      sort: date
+      order: desc
+    fields:
+      - name: slug
+        label: URL 标识（slug）
+        type: string
+        required: true
+        pattern: "^[a-z0-9-]+$"
+      - name: title
+        label: 文章标题
+        type: string
+        required: true
+      - name: summary
+        label: 文章摘要
+        type: text
+      - name: category
+        label: 文章分类
+        type: select
+        options:
+          values:
+            - 技术分享
+            - 生活记录
+            - 随笔
+      - name: date
+        label: 发布日期
+        type: date
+      - name: body
+        label: 正文（富文本 / HTML 源码）
+        type: rich-text
+        options:
+          format: html
+          switcher: true
+          media: article_images
+          path: cms-content/images
+          rename: safe
