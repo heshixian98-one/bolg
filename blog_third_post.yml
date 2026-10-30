@@ -1,0 +1,44 @@
+slug: blog_third_post
+title: 个人网站安全入门：HTTPS、留言板防护、密钥管理与备份
+summary: 网站上线只是开始。真正长期运行时，更重要的是保护访客提交的数据、妥善管理后台凭证，并确保出现误操作或部署问题时能够恢复。本文从个人博客常见场景出发，整理一套容易执行的安全检查清单。
+category: 网站维护 · HTTPS · 表单安全
+date: '2026-10-30'
+body: "<p>个人网站的安全不一定要从复杂的安全设备或昂贵服务开始。对一个以个人介绍、文章和留言板为主的网站来说，先把几个基础环节做好，通常就能减少很多常见风险：访问使用 HTTPS、表单在服务端验证、私密凭证不进入前端、重要文件有备份，并且每次更新后做基本检查。</p>\n\
+  <p>下面以静态 HTML 页面、Cloudflare Pages、Pages Functions 和 D1 这类常见组合为例。不同网站的配置会有差异，文中的重点是理解安全边界和建立可重复的维护习惯，而不是照抄一份配置就认为网站绝对安全。</p>\n\
+  <h2 id=\"https\">一、先确认网站始终通过 HTTPS 访问</h2>\n<p>HTTPS 可以保护浏览器与网站之间传输的数据，尤其是留言板表单内容、登录请求和其他可能包含个人信息的请求。它不能代替服务端验证，也不能阻止所有攻击，但应当作为网站的基础。</p>\n\
+  <ul>\n<li>优先使用已经配置好的正式域名 HTTPS 地址。</li>\n<li>检查首页、博客文章和留言板是否都能通过 HTTPS 正常打开。</li>\n<li>不要在页面中混用不必要的 HTTP 图片、脚本或样式资源，避免混合内容问题。</li>\n\
+  <li>如果调整域名或 DNS，先确认 Cloudflare Pages 项目中的自定义域名状态正常，再进行其他修改。</li>\n</ul>\n<div class=\"note\">浏览器地址栏出现锁形图标，只能说明当前连接使用了 HTTPS，并不代表网站代码、表单或管理员接口一定安全。传输加密和应用层安全是不同层次。</div>\n\
+  <h2 id=\"forms\">二、表单验证不能只依赖浏览器</h2>\n<p>留言板是个人网站中最常见的交互功能之一。前端可以检查必填项、限制输入长度并显示友好提示，但这些检查可以被绕过。真正决定是否接受数据的规则，必须在服务端再次执行。</p>\n\
+  <h3>前端负责体验</h3>\n<ul>\n<li>明确显示哪些字段必填，以及允许输入的内容格式。</li>\n<li>对留言长度设置合理上限，避免页面显示和数据库存储异常。</li>\n<li>提交过程中显示状态，避免访客重复点击造成多次请求。</li>\n\
+  </ul>\n<h3>后端负责可信判断</h3>\n<ul>\n<li>重新验证字段类型、长度和必填条件，不直接相信浏览器传来的值。</li>\n<li>对用户输入进行安全处理，展示文本时避免把输入内容当作 HTML 执行。</li>\n\
+  <li>在服务端执行频率限制，并处理数据库错误。</li>\n<li>如果使用 Turnstile，必须在服务端向 Siteverify 验证令牌；前端出现验证组件不等于验证已经完成。</li>\n</ul>\n<p>这也是为什么留言板的\
+  \ HTML 和 <code>functions/api/</code> 后端文件需要分开维护。前端负责收集和展示，Pages Functions 才是执行可信验证与数据库写入的地方。</p>\n<div class=\"note\">不要为了排查白屏或提交失败而长期关闭\
+  \ Turnstile 服务端验证。调试时应先检查 Sitekey、域名授权、请求参数和后端日志，修复问题后保留完整验证流程。</div>\n<h2 id=\"secrets\">三、把 Sitekey 和 Secret 区分清楚</h2>\n\
+  <p>网站集成第三方服务时，经常会同时出现公开标识和私密凭证。它们的用途不同，不能因为名字相似就放在同一个位置。</p>\n<div class=\"table-wrap\"><table><thead><tr><th>项目</th><th>放置位置</th><th>是否可公开</th></tr></thead><tbody>\n\
+  <tr><td>Turnstile Sitekey</td><td>网页 HTML 中的 data-sitekey</td><td>可以公开</td></tr>\n<tr><td>Turnstile Secret</td><td>Cloudflare\
+  \ Pages 的 Secret 环境变量</td><td>必须保密</td></tr>\n<tr><td>管理员令牌</td><td>服务端 Secret 环境变量</td><td>必须保密</td></tr>\n<tr><td>普通网页内容</td><td>HTML、CSS、公开\
+  \ JavaScript</td><td>按公开网站内容管理</td></tr>\n</tbody></table></div>\n<p>不要把 Secret、管理员令牌、数据库凭证或其他访问密钥写进 HTML、浏览器端 JavaScript、截图或公开仓库。也不要把这些值粘贴到聊天、工单或公开\
+  \ issue 中。</p>\n<p>如果怀疑某个 Secret 已经泄露，正确做法不是只把代码中的字符串删掉，而是到对应服务的控制台轮换凭证，并检查是否有不必要的访问权限。删除 GitHub 文件也不一定会清除它在历史提交中的副本。</p>\n\
+  <h2 id=\"headers\">四、了解安全响应头的作用与边界</h2>\n<p>HTTP 响应头可以告诉浏览器如何处理页面，例如限制页面被其他网站嵌入、避免 MIME 类型嗅探，或控制 Referrer 信息。Cloudflare\
+  \ Pages 支持在站点静态资源目录放置名为 <code>_headers</code> 的文件来设置部分响应头。</p>\n<pre class=\"code\">/*\n  X-Content-Type-Options: nosniff\n\
+  \  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: SAMEORIGIN</pre>\n<p>上面只是常见响应头的示例，不是所有网站都应无条件照搬的完整安全策略。特别是\
+  \ Content-Security-Policy（CSP）需要根据实际加载的脚本、图片、字体和 Turnstile iframe 逐项设计；配置过严可能导致验证组件或页面功能无法加载。</p>\n<div class=\"note\">Cloudflare\
+  \ 文档说明，<code>_headers</code> 规则用于静态资源响应；由 Pages Functions 生成的响应不会自动应用这份文件中的规则。如果要保护 API 响应，需要在函数响应中单独设置适当的响应头。</div>\n<h2\
+  \ id=\"backup\">五、建立能真正恢复的备份</h2>\n<p>GitHub 的提交历史能帮助查看代码变化和恢复网页文件，但它不等同于完整的网站备份。网站还可能包含数据库内容、图片、配置说明和第三方服务设置。</p>\n<ul>\n\
+  <li><strong>网页文件：</strong>定期保存首页、博客列表、文章页面和样式文件的可用版本。</li>\n<li><strong>图片资源：</strong>保留头像、二维码和文章图片的原始文件，不要只留网页引用。</li>\n\
+  <li><strong>数据库：</strong>根据 D1 的备份与导出能力制定备份计划，并确认自己知道如何恢复。</li>\n<li><strong>配置清单：</strong>记录绑定名称、变量名称、域名和部署分支等非机密信息；不要把\
+  \ Secret 值写进清单。</li>\n<li><strong>恢复演练：</strong>偶尔在本地或预览环境检查备份文件能否打开，数据库备份是否可读。</li>\n</ul>\n<p>最重要的不是备份文件数量，而是发生误删、错误提交或数据库问题时，能否找到正确版本并按步骤恢复。</p>\n\
+  <h2 id=\"updates\">六、每次更新后做一次小检查</h2>\n<p>个人网站经常会逐步增加文章、修改导航或调整样式。一次改动看似很小，也可能因为文件名大小写、相对路径或 CSS 选择器导致其他页面异常。建议每次发布后至少检查以下项目：</p>\n\
+  <ul>\n<li>首页能否正常打开，顶部导航和最新文章链接是否正确。</li>\n<li>博客列表是否显示最新文章，文章详情页是否能返回列表。</li>\n<li>留言板能否加载验证组件，并能正常提交或显示明确错误提示。</li>\n<li>管理员功能是否仍按预期工作，且没有把管理凭证暴露在页面源代码中。</li>\n\
+  <li>手机和桌面浏览器的布局是否正常，页面有没有横向溢出。</li>\n<li>Cloudflare Pages 最新部署是否成功，是否有未处理的构建错误。</li>\n</ul>\n<p>如果这次更新只涉及一篇文章，尽量只提交文章文件、博客列表和首页预览等必要改动。一次提交改动越集中，出现问题时越容易定位。</p>\n\
+  <h2 id=\"checklist\">七、一份适合个人博客的安全清单</h2>\n<div class=\"table-wrap\"><table><thead><tr><th>检查项</th><th>建议频率</th><th>检查重点</th></tr></thead><tbody>\n\
+  <tr><td>HTTPS 与域名</td><td>每次发布后</td><td>正式域名和页面资源正常</td></tr>\n<tr><td>表单服务端验证</td><td>功能修改后</td><td>字段校验、频率限制、Turnstile\
+  \ 服务端验证</td></tr>\n<tr><td>Secrets</td><td>新增集成或怀疑泄露时</td><td>不进入前端和公开仓库，必要时轮换</td></tr>\n<tr><td>文件与数据库备份</td><td>定期</td><td>文件可读、恢复步骤明确</td></tr>\n\
+  <tr><td>导航与页面链接</td><td>每次发布后</td><td>首页、列表、文章、留言板互相可达</td></tr>\n</tbody></table></div>\n<h2 id=\"summary\">总结</h2>\n<p>个人网站安全不需要一次性做得很复杂，但必须明确哪些内容可以公开、哪些判断必须放在服务端、哪些数据需要备份。对一个使用\
+  \ GitHub 和 Cloudflare Pages 的静态博客来说，HTTPS、服务端表单验证、Secret 管理、响应头意识和可恢复备份，是值得长期坚持的基础。</p>\n<p>把这些基础工作融入每次发布流程，网站即使逐渐增加文章、留言板和其他功能，也更容易保持稳定和可维护。</p>\n\
+  <h2 id=\"references\">参考资料</h2>\n<ol class=\"sources\">\n<li><a href=\"https://developers.cloudflare.com/pages/configuration/headers/\"\
+  \ rel=\"noopener noreferrer\" target=\"_blank\">Cloudflare Pages：配置 HTTP 响应头</a></li>\n<li><a href=\"https://developers.cloudflare.com/pages/functions/bindings/\"\
+  \ rel=\"noopener noreferrer\" target=\"_blank\">Cloudflare Pages Functions：Bindings 与 Secrets</a></li>\n<li><a href=\"https://developers.cloudflare.com/turnstile/get-started/server-side-validation/\"\
+  \ rel=\"noopener noreferrer\" target=\"_blank\">Cloudflare Turnstile：服务端令牌验证</a></li>\n<li><a href=\"https://developers.cloudflare.com/pages/configuration/serving-pages/\"\
+  \ rel=\"noopener noreferrer\" target=\"_blank\">Cloudflare Pages：页面服务与默认响应头</a></li>\n</ol>\n<a class=\"toplink\" href=\"\
+  #top\">↑ 返回文章顶部</a>"
