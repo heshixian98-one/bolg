@@ -32,7 +32,7 @@ function markdown(md){
 async function gh(path, env, trace=()=>{}){
   trace("github-get-start", { path });
   const url=`https://api.github.com/repos/${env.GITHUB_OWNER||OWNER}/${env.GITHUB_REPO||REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${encodeURIComponent(env.GITHUB_BRANCH||BRANCH)}`;
-  const r=await fetch(url,{headers:{Authorization:`Bearer ${env.GITHUB_TOKEN}`,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"}});
+  const r=await fetch(url,{headers:{Authorization:`Bearer ${env.GITHUB_TOKEN}`,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"Aladdin-Moore-Blog-Admin"}});
   trace("github-get-response", { path, status:r.status, requestId:r.headers.get("x-github-request-id") || "" });
   if(r.status===404)return null;
   const raw=await r.text();
@@ -46,7 +46,7 @@ async function put(path, content, message, env, trace=()=>{}){
   const old=await gh(path,env,trace);const bytes=enc.encode(content);let binary="";for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
   const body={message,content:btoa(binary),branch:env.GITHUB_BRANCH||BRANCH};if(old?.sha)body.sha=old.sha;
   const url=`https://api.github.com/repos/${env.GITHUB_OWNER||OWNER}/${env.GITHUB_REPO||REPO}/contents/${path.split("/").map(encodeURIComponent).join("/")}`;
-  const r=await fetch(url,{method:"PUT",headers:{Authorization:`Bearer ${env.GITHUB_TOKEN}`,Accept:"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"},body:JSON.stringify(body)});
+  const r=await fetch(url,{method:"PUT",headers:{Authorization:`Bearer ${env.GITHUB_TOKEN}`,Accept:"application/vnd.github+json","Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28","User-Agent":"Aladdin-Moore-Blog-Admin"},body:JSON.stringify(body)});
   trace("github-put-response", { path, status:r.status, requestId:r.headers.get("x-github-request-id") || "" });
   const raw=await r.text();
   if(!r.ok){let detail="";try{detail=JSON.parse(raw).message||"";}catch{} throw new Error(`GitHub 提交 ${path} 失败 (${r.status})${detail?": "+detail:""}`);}
