@@ -1,0 +1,8 @@
+content:
+  - name: cms-test-page
+    label: CMS 测试文章
+    type: file
+    path: cms-test/test-article.html
+    format: raw
+    operations:
+      delete: false
