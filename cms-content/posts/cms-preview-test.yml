@@ -1,0 +1,9 @@
+slug: cms-preview-test
+title: Aladdin Moore 的 CMS 编辑测试
+summary: 测试富文本、HTML 源码和双栏网页预览，不影响正式文章。
+category: 技术分享
+date: "2026-10-31"
+body: |
+  <h2>欢迎使用新的文章编辑流程</h2>
+  <p>这是一篇独立的测试文章。你可以在 Pages CMS 中切换富文本和 HTML 源码模式。</p>
+  <p><strong>正式文章尚未迁移</strong>，本次只验证编辑体验和内容保存。</p>

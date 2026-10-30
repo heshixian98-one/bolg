@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aladdin Moore · 双栏文章预览工具</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1017;--panel:#111923;--line:#263548;--ink:#edf2fa;--muted:#9aa9bc;--accent:#83baff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 Arial,"Microsoft YaHei",sans-serif}
+header{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:17px;margin:0}header small{color:var(--muted)}
+main{padding:16px;max-width:1600px;margin:auto}.fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:12px}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}input,textarea{width:100%;background:#080d13;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:65vh}.pane{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.panehead{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.toolbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px;border-bottom:1px solid var(--line)}
+button{background:#18283a;color:var(--ink);border:1px solid #35506d;border-radius:7px;padding:7px 10px;cursor:pointer}
+button.active{background:#24466b;border-color:var(--accent)}button:hover{border-color:var(--accent)}
+#editor{padding:16px;min-height:450px;outline:none;overflow:auto;line-height:1.8}#source{display:none;flex:1;min-height:450px;border:0;border-radius:0;resize:vertical;font:13px/1.55 ui-monospace,Consolas,monospace}
+iframe{width:100%;height:100%;min-height:520px;border:0;background:#0b1017}
+.note{color:var(--muted);font-size:12px;margin:12px 2px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:850px){.split{grid-template-columns:1fr}.fields{grid-template-columns:1fr}.pane iframe{min-height:480px}}
+</style></head>
+<body>
+<header><div><h1>ALADDIN MOORE · ARTICLE STUDIO</h1><small>Pages CMS 辅助预览工具 · 仅用于 cms-test 分支测试</small></div><small>本工具不会直接提交 GitHub</small></header>
+<main>
+<div class="fields">
+  <div><label for="title">文章标题</label><input id="title" value="Aladdin Moore 的 CMS 编辑测试"></div>
+  <div><label for="category">文章分类</label><input id="category" value="技术分享"></div>
+  <div><label for="date">发布日期</label><input id="date" value="2026-10-31"></div>
+  <div style="grid-column:1/-1"><label for="summary">文章摘要</label><input id="summary" value="测试富文本、HTML 源码和双栏网页预览，不影响正式文章。"></div>
+</div>
+<div class="split">
+<section class="pane">
+  <div class="panehead"><strong>正文编辑</strong><span id="modeLabel">富文本模式</span></div>
+  <div class="toolbar" id="toolbar">
+    <button data-cmd="formatBlock" data-val="h2">H2</button><button data-cmd="formatBlock" data-val="h3">H3</button>
+    <button data-cmd="bold"><b>B</b></button><button data-cmd="italic"><i>I</i></button>
+    <button data-cmd="insertUnorderedList">项目列表</button><button data-cmd="insertOrderedList">编号列表</button>
+    <button data-cmd="createLink">插入链接</button><button id="toggle">切换 HTML 源码</button>
+  </div>
+  <div id="editor" contenteditable="true">
+    <h2>欢迎使用新的文章编辑流程</h2>
+    <p>这是一篇独立的测试文章。你可以在 Pages CMS 中切换富文本和 HTML 源码模式。</p>
+    <p><strong>正式文章尚未迁移</strong>，本次只验证编辑体验和内容保存。</p>
+  </div>
+  <textarea id="source" spellcheck="false"></textarea>
+</section>
+<section class="pane">
+  <div class="panehead"><strong>网页实时预览</strong><span>Aladdin Moore 深色主题</span></div>
+  <iframe id="preview" title="文章网页实时预览" sandbox="allow-same-origin"></iframe>
+</section>
+</div>
+<div class="actions">
+<button id="copyHtml">复制正文 HTML</button><button id="downloadHtml">下载预览 HTML</button><button id="reset">恢复示例内容</button>
+</div>
+<p class="note">使用方法：在 Pages CMS 中编辑并保存文章；将正文 HTML 复制到本工具，或在此先试排版。此工具只负责本地实时预览和导出，不会自动读取 Pages CMS 当前编辑内容，也不会直接写入 GitHub。最终保存仍由 Pages CMS 完成。请勿在这里粘贴密码或 Token。</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const editor=$('editor'), source=$('source'), frame=$('preview');
+let sourceMode=false;
+function currentBody(){return sourceMode?source.value:editor.innerHTML}
+function syncSource(){source.value=editor.innerHTML}
+function escapeHtml(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){
+ const title=$('title').value, category=$('category').value, date=$('date').value, summary=$('summary').value, body=currentBody();
+ const doc=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Aladdin Moore</title><style>
+ :root{--bg:#0b1017;--card:#111923;--ink:#edf2fa;--muted:#9aa9bc;--line:#202c3a;--accent:#83baff}
+ *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Microsoft YaHei",sans-serif;line-height:1.85}.wrap{width:min(900px,calc(100% - 32px));margin:auto}.nav{display:flex;justify-content:space-between;gap:14px;padding:22px 0;border-bottom:1px solid var(--line);font-size:13px}.nav a{color:var(--accent);text-decoration:none}.hero{padding:48px 0 28px}.tag{color:var(--accent);border:1px solid #29405a;border-radius:99px;padding:5px 10px;font-size:12px}.hero h1{font-size:clamp(28px,5vw,42px);line-height:1.35}.meta,.lede{color:var(--muted)}.lede{font-size:17px}.article{padding-bottom:64px}.article h2{margin-top:38px;font-size:24px}.article h3{margin-top:26px}.article p,.article li{color:#c2ccda;font-size:15px}.article a{color:var(--accent)}.article img{max-width:100%;height:auto;border-radius:12px}.article pre,.article code{background:#080d13;border-radius:8px;padding:3px 6px;overflow:auto}.footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:12px}
+ </style></head><body><div class="wrap"><header class="nav"><a>Aladdin Moore</a><nav><a>首页</a>　<a>博客</a>　<a>留言板</a></nav><a>← 返回博客</a></header><header class="hero"><span class="tag">${escapeHtml(category)}</span><h1>${escapeHtml(title)}</h1><div class="meta">作者：Aladdin Moore · ${escapeHtml(date)}</div><p class="lede">${escapeHtml(summary)}</p></header><main class="article">${body}</main><footer class="footer">© 2026 Aladdin Moore · 博客预览</footer></div></body></html>`;
+ frame.srcdoc=doc;
+}
+$('toggle').onclick=()=>{if(!sourceMode){syncSource();editor.style.display='none';source.style.display='block';sourceMode=true;$('modeLabel').textContent='HTML 源码模式';$('toggle').textContent='切换富文本'}else{editor.innerHTML=source.value;source.style.display='none';editor.style.display='block';sourceMode=false;$('modeLabel').textContent='富文本模式';$('toggle').textContent='切换 HTML 源码'}render()};
+$('toolbar').addEventListener('click',e=>{const b=e.target.closest('button[data-cmd]');if(!b||sourceMode)return;editor.focus();let v=b.dataset.val||null;if(b.dataset.cmd==='createLink')v=prompt('输入链接地址（https://...）');document.execCommand(b.dataset.cmd,false,v);render()});
+editor.addEventListener('input',render);source.addEventListener('input',render);
+['title','category','date','summary'].forEach(id=>$(id).addEventListener('input',render));
+$('copyHtml').onclick=async()=>{const val=currentBody();try{await navigator.clipboard.writeText(val);alert('正文 HTML 已复制。请粘贴到 Pages CMS 的正文 Source 编辑区。')}catch(e){alert('浏览器未允许自动复制，请切换 HTML 源码后手动复制。')}};
+$('downloadHtml').onclick=()=>{const blob=new Blob([frame.srcdoc],{type:'text/html;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='aladdin-cms-preview.html';a.click();URL.revokeObjectURL(a.href)};
+$('reset').onclick=()=>{editor.innerHTML='<h2>欢迎使用新的文章编辑流程</h2><p>这是一篇独立的测试文章。你可以在 Pages CMS 中切换富文本和 HTML 源码模式。</p><p><strong>正式文章尚未迁移</strong>，本次只验证编辑体验和内容保存。</p>';sourceMode=false;source.style.display='none';editor.style.display='block';$('toggle').textContent='切换 HTML 源码';$('modeLabel').textContent='富文本模式';render()};
+render();
+</script></body></html>
