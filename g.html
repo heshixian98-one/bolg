@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>全球国旗与简称查询器</title>
+<style>
+  body{font-family:"Microsoft YaHei",sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f3f4f6}
+  .box{background:#fff;padding:30px 36px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.08);text-align:center;width:330px}
+  h3{margin:0 0 18px;color:#333;font-size:18px}
+  input{width:100%;box-sizing:border-box;padding:12px;font-size:20px;text-align:center;border:2px solid #e5e7eb;border-radius:10px;outline:none}
+  input:focus{border-color:#3b82f6}
+  .res{display:flex;justify-content:space-around;align-items:center;margin:22px 0 12px;background:#f9fafb;padding:16px 10px;border-radius:12px}
+  .item{cursor:pointer;padding:8px 16px;border-radius:8px;flex:1;transition:.2s}
+  .item:hover{background:#e5e7eb}
+  .fbox{height:54px;display:flex;align-items:center;justify-content:center}
+  .fsvg{width:60px;height:40px;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+  .code{font-size:32px;font-weight:bold;color:#1f2937;height:54px;display:flex;align-items:center;justify-content:center}
+  .lbl{font-size:12px;color:#6b7280;margin-top:6px}
+  #tip{font-size:13px;color:#10b981;height:20px;font-weight:bold}
+  .note{margin-top:12px;font-size:12px;color:#9ca3af;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="box">
+  <h3>输入中文国家/地区名</h3>
+  <input type="text" id="inp" placeholder="如：中国、埃及、巴拿马" autofocus>
+  <div class="res">
+    <div class="item" id="fBtn"><div class="fbox" id="fRes"><span style="font-size:36px">🏳️</span></div><div class="lbl">点击复制国旗</div></div>
+    <div class="item" id="cBtn"><div class="code" id="cRes">--</div><div class="lbl">点击复制简称</div></div>
+  </div>
+  <div id="tip"></div>
+  <div class="note">纯离线内置图库 · 收录全球 195 国家/地区<br>输入后自动复制国旗，点击右侧可复制简称</div>
+</div>
+<script>
+const C={中国:"CN",大陆:"CN",香港:"HK",中国香港:"HK",澳门:"MO",中国澳门:"MO",台湾:"TW",中国台湾:"TW",日本:"JP",东京:"JP",韩国:"KR",南韩:"KR",首尔:"KR",朝鲜:"KP",北韩:"KP",蒙古:"MN",新加坡:"SG",狮城:"SG",马来西亚:"MY",马来:"MY",印度尼西亚:"ID",印尼:"ID",泰国:"TH",曼谷:"TH",越南:"VN",菲律宾:"PH",柬埔寨:"KH",老挝:"LA",缅甸:"MM",文莱:"BN",东帝汶:"TL",印度:"IN",巴基斯坦:"PK",孟加拉:"BD",孟加拉国:"BD",斯里兰卡:"LK",尼泊尔:"NP",不丹:"BT",马尔代夫:"MV",哈萨克斯坦:"KZ",乌兹别克斯坦:"UZ",土库曼斯坦:"TM",吉尔吉斯斯坦:"KG",塔吉克斯坦:"TJ",阿富汗:"AF",伊朗:"IR",伊拉克:"IQ",叙利亚:"SY",约旦:"JO",黎巴嫩:"LB",以色列:"IL",巴勒斯坦:"PS",沙特:"SA",沙特阿拉伯:"SA",也门:"YE",阿曼:"OM",阿联酋:"AE",迪拜:"AE",卡塔尔:"QA",科威特:"KW",巴林:"BH",土耳其:"TR",塞浦路斯:"CY",格鲁吉亚:"GE",亚美尼亚:"AM",阿塞拜疆:"AZ",英国:"GB",伦敦:"GB",爱尔兰:"IE",法国:"FR",巴黎:"FR",德国:"DE",法兰克福:"DE",意大利:"IT",西班牙:"ES",葡萄牙:"PT",荷兰:"NL",尼德兰:"NL",比利时:"BE",卢森堡:"LU",瑞士:"CH",奥地利:"AT",摩纳哥:"MC",列支敦士登:"LI",安道尔:"AD",圣马力诺:"SM",梵蒂冈:"VA",马耳他:"MT",挪威:"NO",瑞典:"SE",芬兰:"FI",丹麦:"DK",冰岛:"IS",波兰:"PL",捷克:"CZ",斯洛伐克:"SK",匈牙利:"HU",罗马尼亚:"RO",保加利亚:"BG",希腊:"GR",阿尔巴尼亚:"AL",北马其顿:"MK",马其顿:"MK",塞尔维亚:"RS",黑山:"ME",波黑:"BA",克罗地亚:"HR",斯洛文尼亚:"SI",爱沙尼亚:"EE",拉脱维亚:"LV",立陶宛:"LT",白俄罗斯:"BY",乌克兰:"UA",摩尔多瓦:"MD",俄罗斯:"RU",莫斯科:"RU",美国:"US",洛杉矶:"US",硅谷:"US",纽约:"US",加拿大:"CA",多伦多:"CA",墨西哥:"MX",危地马拉:"GT",伯利兹:"BZ",萨尔瓦多:"SV",洪都拉斯:"HN",尼加拉瓜:"NI",哥斯达黎加:"CR",巴拿马:"PA",古巴:"CU",牙买加:"JM",海地:"HT",多米尼加:"DO",巴哈马:"BS",巴巴多斯:"BB",特立尼达和多巴哥:"TT",圣基茨和尼维斯:"KN",安提瓜和巴布达:"AG",多米尼克:"DM",圣卢西亚:"LC",圣文森特和格林纳丁斯:"VC",格林纳达:"GD",巴西:"BR",阿根廷:"AR",智利:"CL",秘鲁:"PE",哥伦比亚:"CO",委内瑞拉:"VE",厄瓜多尔:"EC",玻利维亚:"BO",巴拉圭:"PY",乌拉圭:"UY",圭亚那:"GY",苏里南:"SR",澳大利亚:"AU",澳洲:"AU",悉尼:"AU",新西兰:"NZ",巴布亚新几内亚:"PG",斐济:"FJ",所罗门群岛:"SB",瓦努阿图:"VU",萨摩亚:"WS",基里巴斯:"KI",汤加:"TO",密克罗尼西亚:"FM",帕劳:"PW",马绍尔群岛:"MH",瑙鲁:"NR",图瓦卢:"TV",埃及:"EG",南非:"ZA",尼日利亚:"NG",肯尼亚:"KE",埃塞俄比亚:"ET",摩洛哥:"MA",阿尔及利亚:"DZ",突尼斯:"TN",利比亚:"LY",苏丹:"SD",南苏丹:"SS",加纳:"GH",科特迪瓦:"CI",象牙海岸:"CI",塞内加尔:"SN",马里:"ML",布基纳法索:"BF",尼日尔:"NE",几内亚:"GN",几内亚比绍:"GW",塞拉利昂:"SL",利比里亚:"LR",多哥:"TG",贝宁:"BJ",毛里塔尼亚:"MR",冈比亚:"GM",佛得角:"CV",喀麦隆:"CM",中非:"CF",乍得:"TD",刚果布:"CG",刚果金:"CD",加蓬:"GA",赤道几内亚:"GQ",圣多美和普林西比:"ST",安哥拉:"AO",赞比亚:"ZM",津巴布韦:"ZW",马拉维:"MW",莫桑比克:"MZ",纳米比亚:"NA",博茨瓦纳:"BW",莱索托:"LS",斯威士兰:"SZ",埃斯瓦蒂尼:"SZ",坦桑尼亚:"TZ",乌干达:"UG",卢旺达:"RW",布隆迪:"BI",索马里:"SO",吉布提:"DJ",厄立特里亚:"ER",马达加斯加:"MG",毛里求斯:"MU",塞舌尔:"SC",科摩罗:"KM"};
+const F={CN:"R0,0,30,20,#de2910;S5,5,2.6,#ffde00;S10,2,0.8,#ffde00;S12,4,0.8,#ffde00;S12,7,0.8,#ffde00;S10,9,0.8,#ffde00",HK:"R0,0,30,20,#de2910;C15,10,4.5,#fff;C15,10,2.2,#de2910",TW:"R0,0,30,20,#fe0000;R0,0,15,10,#000095;C7.5,5,2.8,#fff",MO:"R0,0,30,20,#00785e;C15,11,3.5,#fff;S15,5,1,#ffde00",JP:"R0,0,30,20,#fff;C15,10,6,#bc002d",KR:"R0,0,30,20,#fff;C15,10,5,#cd2e3a;R5,3,3,1.5,#000;R22,3,3,1.5,#000;R5,15.5,3,1.5,#000;R22,15.5,3,1.5,#000",KP:"R0,0,30,20,#024fa2;R0,3.5,30,13,#fff;R0,4.5,30,11,#ed1c27;C10.5,10,3.8,#fff;S10.5,10,3.2,#ed1c27",SG:"R0,0,30,10,#ef3340;R0,10,30,10,#fff;C7.5,5,3.2,#fff;C8.8,5,3,#ef3340;S11,5,1.2,#fff",US:"R0,0,30,20,#fff;R0,0,30,2.8,#b22234;R0,5.6,30,2.8,#b22234;R0,11.2,30,2.8,#b22234;R0,16.8,30,3.2,#b22234;R0,0,13,11.2,#3c3b6e;S6.5,5.6,3,#fff",GB:"R0,0,30,20,#012169;R12.5,0,5,20,#fff;R0,7.5,30,5,#fff;R13.5,0,3,20,#c8102e;R0,8.5,30,3,#c8102e",CA:"R0,0,30,20,#ff0000;R7.5,0,15,20,#fff;S15,10,4.5,#ff0000",AU:"R0,0,30,20,#00008b;R6,0,3,10,#fff;R0,3.5,15,3,#fff;R6.7,0,1.6,10,#c8102e;R0,4.2,15,1.6,#c8102e;S7.5,15,2,#fff;S22,6,1.2,#fff;S24,11,1.2,#fff;S21,15,1.4,#fff",NZ:"R0,0,30,20,#00247d;R6,0,3,10,#fff;R0,3.5,15,3,#fff;R6.7,0,1.6,10,#c8102e;R0,4.2,15,1.6,#c8102e;S22,5,1.3,#cc142b;S25,9,1.3,#cc142b;S19.5,10,1.3,#cc142b;S22,15,1.5,#cc142b",PA:"R0,0,15,10,#fff;R15,0,15,10,#da121a;R0,10,15,10,#072357;R15,10,15,10,#fff;S7.5,5,2.6,#072357;S22.5,15,2.6,#da121a",TR:"R0,0,30,20,#e30a17;C11,10,5,#fff;C12.3,10,4,#e30a17;S18.5,10,2.2,#fff",SE:"R0,0,30,20,#006aa7;R9,0,3.5,20,#fecc02;R0,8.2,30,3.5,#fecc02",NO:"R0,0,30,20,#ba0c2f;R8.5,0,4.5,20,#fff;R0,7.8,30,4.5,#fff;R9.6,0,2.3,20,#00205b;R0,8.9,30,2.3,#00205b",FI:"R0,0,30,20,#fff;R8.5,0,4.5,20,#003580;R0,7.8,30,4.5,#003580",DK:"R0,0,30,20,#c8102e;R9,0,3,20,#fff;R0,8.5,30,3,#fff",IS:"R0,0,30,20,#02529c;R8.5,0,4.5,20,#fff;R0,7.8,30,4.5,#fff;R9.6,0,2.3,20,#dc1e35;R0,8.9,30,2.3,#dc1e35",CH:"R0,0,30,20,#d52b1e;R13,4,4,12,#fff;R9,8,12,4,#fff",BR:"R0,0,30,20,#009c3b;C15,10,7.5,#ffdf00;C15,10,4.5,#002776",AR:"R0,0,30,6.7,#74acdf;R0,6.7,30,6.6,#fff;R0,13.3,30,6.7,#74acdf;C15,10,2.2,#f6b40e",IN:"R0,0,30,6.7,#ff9933;R0,6.7,30,6.6,#fff;R0,13.3,30,6.7,#138808;C15,10,2.3,#000080",VN:"R0,0,30,20,#da251d;S15,10,5.5,#ffff00",TH:"R0,0,30,20,#a51931;R0,3.3,30,13.4,#f4f5f8;R0,6.7,30,6.6,#2d2a4a",MY:"R0,0,30,20,#cc0001;R0,3,30,3,#fff;R0,9,30,3,#fff;R0,15,30,3,#fff;R0,0,15,11,#010066;C6.5,5.5,3.2,#ffcc00;C7.8,5.5,2.8,#010066",AE:"R0,0,30,6.7,#00732f;R0,6.7,30,6.6,#fff;R0,13.3,30,6.7,#000;R0,0,7.5,20,#ff0000",SA:"R0,0,30,20,#006c35;R7,13.5,16,1.5,#fff;C15,8.5,2.5,#fff",IL:"R0,0,30,20,#fff;R0,2.5,30,2.5,#0038b8;R0,15,30,2.5,#0038b8;S15,10,3.5,#0038b8",EG:"R0,0,30,6.7,#ce1126;R0,6.7,30,6.6,#fff;R0,13.3,30,6.7,#000;C15,10,2,#c09300",CL:"R0,0,30,10,#fff;R0,10,30,10,#d52b1e;R0,0,10,10,#0039a6;S5,5,2.5,#fff",BD:"R0,0,30,20,#006a4e;C13.5,10,5.5,#f42a41",PK:"R0,0,30,20,#01411c;R0,0,7.5,20,#fff;C19,10,4.8,#fff;C20.4,8.8,4.2,#01411c;S21.5,8.5,1.8,#fff",DE:"h#000,#d00,#fc0",RU:"h#fff,#03a,#d21",NL:"h#a12,#fff,#248",LU:"h#e23,#fff,#0ad",AT:"h#e23,#fff,#e23",HU:"h#c23,#fff,#475",BG:"h#fff,#096,#d21",EE:"h#07c,#000,#fff",LV:"h#933,#fff,#933",LT:"h#fb1,#064,#c22",UA:"h#05b,#fd0",PL:"h#fff,#d13",ID:"h#f00,#fff",MC:"h#c12,#fff",ES:"h#a11,#fb0,#fb0,#a11",CO:"h#fd1,#fd1,#039,#c12",VE:"h#fe0,#03a,#e34",EC:"h#fd0,#fd0,#04a,#e12",BO:"h#d21,#fe0,#073",PY:"h#d21,#fff,#03a",AM:"h#d01,#03a,#fa0",AZ:"h#0be,#e34,#592",IR:"h#294,#fff,#d00",IQ:"h#c12,#fff,#000",SY:"h#c12,#fff,#000",YE:"h#c12,#fff,#000",SD:"h#d13,#fff,#000",LY:"h#e01,#000,#000,#294",GH:"h#c12,#fd1,#063",ET:"h#083,#fd0,#d11",KE:"h#000,#b00,#060",TZ:"h#1b3,#0ad",UG:"h#000,#fd0,#d00",GA:"h#096,#fd1,#37c",SL:"h#1b3,#fff,#07c",NE:"h#e50,#fff,#0b2",MW:"h#000,#c12,#393",GM:"h#c12,#018,#372",MU:"h#e23,#126,#fd0,#0a5",CR:"h#027,#fff,#c12,#c12,#fff,#027",HN:"h#07c,#fff,#07c",NI:"h#06c,#fff,#06c",SV:"h#04a,#fff,#04a",LA:"h#c12,#026,#026,#c12",MM:"h#fc0,#3b3,#e23",KH:"h#02a,#e02,#e02,#02a",UZ:"h#09b,#fff,#1b3",TJ:"h#c00,#fff,#060",TM:"h#083,#083",KZ:"h#0ac,#0ac",KG:"h#e12,#e12",MN:"h#c22,#059,#c22",LB:"h#e12,#fff,#fff,#e12",JO:"h#000,#fff,#073",PS:"h#000,#fff,#073",KW:"h#073,#fff,#c12",OM:"h#fff,#d11,#080",QA:"h#fff,#813",BH:"h#fff,#c12",BY:"h#c33,#c33,#4a5",HR:"h#f00,#fff,#119",RS:"h#c33,#047,#fff",SI:"h#fff,#05e,#e12",SK:"h#fff,#04a,#e12",AL:"h#e12,#e12",MK:"h#d00,#fe0",ME:"h#c00,#c00",BA:"h#029,#fc0",GE:"h#fff,#f00",CY:"h#fff,#d70",MT:"h#fff,#c12",LI:"h#027,#c12",SM:"h#fff,#5be",AF:"h#000,#b00,#090",LK:"h#813,#fb2",MV:"h#d13,#073",BT:"h#fd2,#f41",BN:"h#fe1,#fff,#000",TL:"h#d21,#fc2",FJ:"h#6be,#6be",PG:"h#c12,#000",SB:"h#05b,#253",VU:"h#d13,#094",WS:"h#c12,#027",TO:"h#c00,#c00",KI:"h#c12,#038",FM:"h#7bd,#7bd",PW:"h#4ad,#fd0",MH:"h#039,#d70",NR:"h#027,#fc1",TV:"h#09d,#09d",UY:"h#fff,#03a,#fff,#03a,#fff",GY:"h#094,#fd1",SR:"h#373,#b02,#373",DO:"h#026,#c12",HT:"h#029,#d13",JM:"h#093,#fd0",TT:"h#c12,#000",BS:"h#078,#fc2,#078",BZ:"h#038,#d01",MA:"h#c22,#c22",DZ:"h#063,#fff",TN:"h#e01,#e01",SS:"h#000,#d11,#083",MR:"h#0a5,#d11",CV:"h#039,#c22",CF:"h#038,#fff,#292,#fc0",CG:"h#094,#fd4,#d21",CD:"h#07f,#c12",GQ:"h#390,#fff,#e21",ST:"h#1a2,#fc0,#1a2",AO:"h#c02,#000",ZM:"h#180,#d21",ZW:"h#390,#fd0,#d21",MZ:"h#076,#000,#fe0",NA:"h#038,#d13,#094",BW:"h#6ad,#000,#6ad",LS:"h#029,#fff,#094",SZ:"h#35b,#b00,#35b",RW:"h#0ad,#fd0,#263",BI:"h#c12,#1b3",SO:"h#48d,#48d",DJ:"h#6be,#1a2",ER:"h#e03,#1a2",MG:"h#f33,#073",SC:"h#038,#fd5,#d22,#073",KM:"h#fc1,#fff,#c12,#37c",LR:"h#b03,#fff,#b03",TG:"h#064,#fc0,#064",BJ:"h#fd1,#e12",BF:"h#e22,#094",GW:"h#fd1,#094",ZA:"h#e33,#074,#018",PH:"h#03a,#c12",CZ:"h#fff,#d11",CU:"h#028,#fff,#028,#fff,#028",GR:"h#05a,#fff,#05a,#fff,#05a",NP:"h#d13,#039",FR:"v#029,#fff,#e23",IT:"v#094,#fff,#c23",IE:"v#196,#fff,#f83",BE:"v#000,#fd2,#e34",RO:"v#027,#fd1,#c12",MD:"v#04a,#fd0,#c02",AD:"v#01a,#fd0,#d21",VA:"v#fe0,#fff",PT:"v#060,#f00,#f00",MX:"v#064,#fff,#c12",GT:"v#49d,#fff,#49d",PE:"v#d12,#fff,#d12",BB:"v#027,#fc2,#027",VC:"v#07c,#fd1,#096",NG:"v#085,#fff,#085",CI:"v#f70,#fff,#096",SN:"v#083,#fd4,#e12",ML:"v#1b3,#fd1,#c12",GN:"v#c12,#fd1,#096",CM:"v#075,#c12,#fd1",TD:"v#026,#fc0,#c03",KN:"v#094,#c12",AG:"v#c12,#000,#07c",DM:"v#063,#fd1,#063",LC:"v#6cf,#fd1,#6cf",GD:"v#c12,#fd1,#075"};
+function starPts(cx,cy,r){let p=[];for(let i=0;i<5;i++){let a1=(i*72-90)*Math.PI/180,a2=(i*72-54)*Math.PI/180;p.push((cx+r*Math.cos(a1)).toFixed(1)+","+(cy+r*Math.sin(a1)).toFixed(1));p.push((cx+r*.4*Math.cos(a2)).toFixed(1)+","+(cy+r*.4*Math.sin(a2)).toFixed(1))}return p.join(" ")}
+function drawFlag(code){
+  const ns="http://w3.org",svg=document.createElementNS(ns,"svg");
+  svg.setAttribute("class","fsvg");svg.setAttribute("viewBox","0 0 30 20");
+  const d=F[code]||"h#3b82f6";
+  if(d[0]==="h"||d[0]==="v"){
+    const isH=d[0]==="h",cols=d.slice(1).split(","),step=(isH?20:30)/cols.length;
+    cols.forEach((c,i)=>{const el=document.createElementNS(ns,"rect");el.setAttribute("x",isH?0:i*step);el.setAttribute("y",isH?i*step:0);el.setAttribute("width",isH?30:step+.3);el.setAttribute("height",isH?step+.3:20);el.setAttribute("fill",c);svg.appendChild(el)});
+  }else{
+    d.split(";").forEach(cmd=>{
+      const t=cmd[0],a=cmd.slice(1).split(",");
+      if(t==="R"){const el=document.createElementNS(ns,"rect");el.setAttribute("x",a[0]);el.setAttribute("y",a[1]);el.setAttribute("width",a[2]);el.setAttribute("height",a[3]);el.setAttribute("fill",a[4]);svg.appendChild(el)}
+      else if(t==="C"){const el=document.createElementNS(ns,"circle");el.setAttribute("cx",a[0]);el.setAttribute("cy",a[1]);el.setAttribute("r",a[2]);el.setAttribute("fill",a[3]);svg.appendChild(el)}
+      else if(t==="S"){const el=document.createElementNS(ns,"polygon");el.setAttribute("points",starPts(+a[0],+a[1],+a[2]));el.setAttribute("fill",a[3]);svg.appendChild(el)}
+    });
+  }
+  fRes.innerHTML="";fRes.appendChild(svg);
+}
+const inp=document.getElementById("inp"),fRes=document.getElementById("fRes"),cRes=document.getElementById("cRes"),tip=document.getElementById("tip");
+let curFlag="",curCode="";
+function copy(txt,lbl){if(!txt)return;navigator.clipboard.writeText(txt).then(()=>{tip.innerText=`✅ 已复制${lbl}到剪贴板！`;setTimeout(()=>tip.innerText="",2000)}).catch(()=>{})}
+function run(){
+  const v=inp.value.trim(),code=C[v]||(/^[a-zA-Z]{2}$/.test(v)?v.toUpperCase():"");
+  if(code){if(curCode!==code){curCode=code;curFlag=String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt(0)));drawFlag(code);cRes.innerText=curCode;copy(curFlag,"国旗")}}
+  else{curCode="";curFlag="";fRes.innerHTML='<span style="font-size:36px">🏳️</span>';cRes.innerText="--";tip.innerText=""}
+}
+inp.addEventListener("input",run);inp.addEventListener("keyup",run);
+document.getElementById("fBtn").onclick=()=>copy(curFlag,"国旗");
+document.getElementById("cBtn").onclick=()=>copy(curCode,"简称");
+</script>
+</body>
+</html>
