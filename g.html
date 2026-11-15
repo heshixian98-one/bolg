@@ -39,15 +39,16 @@ function drawFlag(code){
   const ns="http://w3.org",svg=document.createElementNS(ns,"svg");
   svg.setAttribute("class","fsvg");svg.setAttribute("viewBox","0 0 30 20");
   const d=F[code]||"h#3b82f6";
-  if(d[0]==="h"||d[0]==="v"){
-    const isH=d[0]==="h",cols=d.slice(1).split(","),step=(isH?20:30)/cols.length;
+  const type=d.charAt(0);
+  if(type==="h"||type==="v"){
+    const isH=type==="h",cols=d.slice(1).split(","),step=(isH?20:30)/cols.length;
     cols.forEach((c,i)=>{const el=document.createElementNS(ns,"rect");el.setAttribute("x",isH?0:i*step);el.setAttribute("y",isH?i*step:0);el.setAttribute("width",isH?30:step+.3);el.setAttribute("height",isH?step+.3:20);el.setAttribute("fill",c);svg.appendChild(el)});
   }else{
     d.split(";").forEach(cmd=>{
-      const t=cmd[0],a=cmd.slice(1).split(",");
-      if(t==="R"){const el=document.createElementNS(ns,"rect");el.setAttribute("x",a[0]);el.setAttribute("y",a[1]);el.setAttribute("width",a[2]);el.setAttribute("height",a[3]);el.setAttribute("fill",a[4]);svg.appendChild(el)}
-      else if(t==="C"){const el=document.createElementNS(ns,"circle");el.setAttribute("cx",a[0]);el.setAttribute("cy",a[1]);el.setAttribute("r",a[2]);el.setAttribute("fill",a[3]);svg.appendChild(el)}
-      else if(t==="S"){const el=document.createElementNS(ns,"polygon");el.setAttribute("points",starPts(+a[0],+a[1],+a[2]));el.setAttribute("fill",a[3]);svg.appendChild(el)}
+      const t=cmd.charAt(0),a=cmd.slice(1).split(",");
+      if(t==="R"){const el=document.createElementNS(ns,"rect");el.setAttribute("x",a.at(0));el.setAttribute("y",a.at(1));el.setAttribute("width",a.at(2));el.setAttribute("height",a.at(3));el.setAttribute("fill",a.at(4));svg.appendChild(el)}
+      else if(t==="C"){const el=document.createElementNS(ns,"circle");el.setAttribute("cx",a.at(0));el.setAttribute("cy",a.at(1));el.setAttribute("r",a.at(2));el.setAttribute("fill",a.at(3));svg.appendChild(el)}
+      else if(t==="S"){const el=document.createElementNS(ns,"polygon");el.setAttribute("points",starPts(+a.at(0),+a.at(1),+a.at(2)));el.setAttribute("fill",a.at(3));svg.appendChild(el)}
     });
   }
   fRes.innerHTML="";fRes.appendChild(svg);
